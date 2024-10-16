@@ -1,3 +1,5 @@
+import 'package:final_project/utils/global_methods.dart';
+import 'package:final_project/views/chats/history_thread_chats.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:flutter/material.dart';
 
@@ -71,7 +73,13 @@ class _MainChatPageState extends State<MainThreadChat> {
                     Row(
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Utils.showBottomSheet(
+                              context,
+                              sheet: const HistoryThreadChatPage(),
+                              showFullScreen: true,
+                            );
+                          },
                           icon: const Icon(Icons.access_time_outlined),
                         ),
                         IconButton(

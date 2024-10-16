@@ -1,4 +1,4 @@
-import 'package:final_project/views/chatbot_ai/add_chatbot_ai_page.dart';
+import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/knowledge_base/add_kb_page.dart';
 import 'package:final_project/widgets/kb_item.dart';
 import 'package:flutter/material.dart';
@@ -55,26 +55,16 @@ class _KBPage extends State<KBPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showFullModal(context),
+        onPressed: () {
+          Utils.showBottomSheet(
+            context,
+            sheet: const AddKBPage(),
+            showFullScreen: true,
+          );
+        },
         tooltip: 'Add Knowledge Base',
         child: const Icon(Icons.add),
       ),
-    );
-  }
-
-  void showFullModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(16.0),
-        ),
-      ),
-      builder: (context) {
-        return const AddKBPage();
-      },
     );
   }
 }
