@@ -1,4 +1,4 @@
-import 'package:final_project/views/add_chatbot_ai_page.dart';
+import 'package:final_project/views/chatbot_ai/add_chatbot_ai_page.dart';
 import 'package:final_project/widgets/chatbot_ai_item.dart';
 import 'package:flutter/material.dart';
 
