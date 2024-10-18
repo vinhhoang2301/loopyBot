@@ -1,3 +1,4 @@
+import 'package:final_project/consts/app_color.dart';
 import 'package:flutter/material.dart';
 
 class ThreadChatItem extends StatelessWidget {
@@ -9,7 +10,7 @@ class ThreadChatItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: AppColors.backgroundColor2,
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: const Column(

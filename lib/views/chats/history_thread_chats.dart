@@ -1,3 +1,4 @@
+import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/thread_chat_item.dart';
 import 'package:flutter/material.dart';
 
@@ -47,7 +48,7 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: const BorderSide(
-                        color: Colors.grey,
+                        color: AppColors.backgroundColor2,
                         width: 2.0,
                       ),
                     ),
@@ -63,7 +64,7 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: Colors.grey,
+                        color: AppColors.backgroundColor2,
                         width: 2.0,
                       ),
                       borderRadius: BorderRadius.circular(16),
@@ -71,14 +72,15 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                     child: const Icon(
                       Icons.star_border_outlined,
                       size: 28,
-                      color: Colors.grey,
+                      color: AppColors.backgroundColor2,
                     ),
                   ),
                   const SizedBox(width: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey,
+                      border: Border.all(
+                        color: AppColors.backgroundColor2,
                         width: 2.0,
                       ),
                       borderRadius: BorderRadius.circular(16),
@@ -86,7 +88,7 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                     child: const Icon(
                       Icons.delete_outline_outlined,
                       size: 28,
-                      color: Colors.grey,
+                      color: AppColors.backgroundColor2,
                     ),
                   ),
                 ],

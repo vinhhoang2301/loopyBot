@@ -1,6 +1,9 @@
+import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chats/history_thread_chats.dart';
+import 'package:final_project/views/knowledge_base/add_unit_kb_page.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
+import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
 
 class MainThreadChat extends StatefulWidget {
@@ -18,10 +21,14 @@ class _MainChatPageState extends State<MainThreadChat> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Jarvis Chat'),
+        title: const Text(
+          'Main Chat',
+        ),
         backgroundColor: Colors.blueAccent,
+        foregroundColor: AppColors.inverseTextColor,
       ),
-      drawer: const Drawer(),
+      // drawer: const Drawer(),
+      drawer: const TabBarWidget(),
       body: Column(
         children: [
           Expanded(
@@ -60,19 +67,28 @@ class _MainChatPageState extends State<MainThreadChat> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Flexible(child: DropdownModelAI()),
-                    Row(
-                      children: [
-                        const Icon(Icons.local_fire_department_rounded),
-                        const SizedBox(width: 4),
-                        Text(
-                          '30',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                      ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryColor,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.local_fire_department_rounded),
+                          const SizedBox(width: 4),
+                          Text(
+                            '30',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
                         IconButton(
+                          tooltip: 'History',
                           onPressed: () {
                             Utils.showBottomSheet(
                               context,
@@ -80,11 +96,24 @@ class _MainChatPageState extends State<MainThreadChat> {
                               showFullScreen: true,
                             );
                           },
-                          icon: const Icon(Icons.access_time_outlined),
+                          icon: const Icon(
+                            Icons.access_time_outlined,
+                            color: AppColors.primaryColor,
+                          ),
                         ),
                         IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.add_comment),
+                          tooltip: 'New Conversation',
+                          onPressed: () {
+                            Utils.showBottomSheet(
+                              context,
+                              sheet: const AddUnitKBPage(),
+                              showFullScreen: true,
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.add_comment,
+                            color: AppColors.primaryColor,
+                          ),
                         )
                       ],
                     )
@@ -93,7 +122,8 @@ class _MainChatPageState extends State<MainThreadChat> {
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: Colors.grey,
+                      color: AppColors.backgroundColor2,
+                      width: 2.0,
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),

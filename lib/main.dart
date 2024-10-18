@@ -1,4 +1,5 @@
-import 'package:final_project/views/chatbot_ai_page.dart';
+import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -13,10 +14,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primaryColor: AppColors.primaryColor,
+        scaffoldBackgroundColor: AppColors.backgroundColor1,
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: AppColors.inverseTextColor),
+          bodyMedium: TextStyle(color: AppColors.defaultTextColor),
+        ),
       ),
-      home: const ChatbotAIPage(title: 'Flutter Demo Home Page'),
+      home: const MainThreadChat(),
       debugShowCheckedModeBanner: false,
     );
   }
