@@ -11,7 +11,7 @@ class KBItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/kb_icon.png',
+            'assets/icon/kb_icon.png',
             height: 56,
             width: 56,
           ),

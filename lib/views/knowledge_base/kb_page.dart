@@ -1,12 +1,12 @@
+import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/knowledge_base/add_kb_page.dart';
 import 'package:final_project/widgets/kb_item.dart';
+import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
 
 class KBPage extends StatefulWidget {
-  const KBPage({super.key, required this.title});
-
-  final String title;
+  const KBPage({super.key});
 
   @override
   State<KBPage> createState() => _KBPage();
@@ -17,10 +17,11 @@ class _KBPage extends State<KBPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Your Knowledge Base'),
+        title: const Text('Knowledge Base'),
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.inverseTextColor,
       ),
-      drawer: const Drawer(),
+      drawer: const TabBarWidget(),
       body: Column(
         children: [
           Padding(
@@ -63,6 +64,9 @@ class _KBPage extends State<KBPage> {
           );
         },
         tooltip: 'Add Knowledge Base',
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.inverseTextColor,
+        shape: const CircleBorder(),
         child: const Icon(Icons.add),
       ),
     );

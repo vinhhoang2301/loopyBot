@@ -24,7 +24,7 @@ class _MainChatPageState extends State<MainThreadChat> {
         title: const Text(
           'Main Chat',
         ),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.inverseTextColor,
       ),
       // drawer: const Drawer(),
@@ -157,7 +157,7 @@ class _MainChatPageState extends State<MainThreadChat> {
                           IconButton(
                             icon: const Icon(
                               Icons.send,
-                              color: Colors.blueAccent,
+                              color: AppColors.primaryColor,
                             ),
                             onPressed: () {},
                           ),

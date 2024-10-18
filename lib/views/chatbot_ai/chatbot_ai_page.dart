@@ -1,12 +1,12 @@
+import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/add_chatbot_ai_page.dart';
 import 'package:final_project/widgets/chatbot_ai_item.dart';
+import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
 
 class ChatbotAIPage extends StatefulWidget {
-  const ChatbotAIPage({super.key, required this.title});
-
-  final String title;
+  const ChatbotAIPage({super.key});
 
   @override
   State<ChatbotAIPage> createState() => _ChatbotAIPage();
@@ -20,10 +20,11 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Your Chatbot AI'),
+        title: const Text('Chatbot AI'),
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.inverseTextColor,
       ),
-      drawer: const Drawer(),
+      drawer: const TabBarWidget(),
       body: Column(
         children: [
           Padding(
@@ -86,6 +87,9 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
           );
         },
         tooltip: 'Add Chatbot AI',
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.inverseTextColor,
+        shape: const CircleBorder(),
         child: const Icon(Icons.add),
       ),
     );
