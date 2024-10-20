@@ -1,7 +1,7 @@
-//import 'package:final_project/views/gmail_login.dart';
-import 'package:final_project/views/chats/main_thread_chat.dart';
+
 import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/consts/app_routes.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -17,7 +17,7 @@ class RegisterPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Google Sign-in Button
+            // Google Sign-in Button5
             Container(
               padding: const EdgeInsets.all(16.0),
               
@@ -54,10 +54,7 @@ class RegisterPage extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const MainThreadChat()),
-                        );
+                        Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
                       },
                       child: const Text('Register'),
                       ),
@@ -69,29 +66,23 @@ class RegisterPage extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const MainThreadChat()),
-                            );
+                            Navigator.of(context).pushReplacementNamed(AppRoutes.loginGmail);
                           },
                           icon: Image.asset(
                           'assets/icon/google_icon.png',
-                          height: 24.0, // Adjust the height as needed
-                          width: 24.0,  // Adjust the width as needed
+                          height: 24.0, 
+                          width: 24.0,  
                           ),
                           label: const Text('Google'),
                         ),
                         
                       ),
-                      const SizedBox(width: 10), // Spacing between buttons
+                      const SizedBox(width: 10), 
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const MainThreadChat()),
-                            );
-                        },
+                          Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
+                         },
                           
                           label: const Text('Jarvis'),
                         ),
@@ -103,7 +94,7 @@ class RegisterPage extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20), // Spacing between form and footer
+            const SizedBox(height: 20), 
             const Center(
               child: Text('By continuing, you agree to our Privacy Policy'),
             ),
