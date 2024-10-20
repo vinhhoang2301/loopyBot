@@ -17,17 +17,17 @@ class RegisterPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Google Sign-in Button5
+            
             Container(
               padding: const EdgeInsets.all(16.0),
               
               child: const Text('Welcome to Jarvis!'),
             ),
-            const SizedBox(height: 20), // Spacing between buttons and form
+            const SizedBox(height: 20), 
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Form(
-                // Add form validation logic here
+                
                 child: Column(
                   children: [
                     TextFormField(
@@ -49,7 +49,7 @@ class RegisterPage extends StatelessWidget {
                         prefixIcon: Icon(Icons.lock),
                       ),
                     ),
-                    const SizedBox(height: 20), // Spacing between form fields and button
+                    const SizedBox(height: 20), 
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -59,7 +59,7 @@ class RegisterPage extends StatelessWidget {
                       child: const Text('Register'),
                       ),
                     ),                
-                    const Text('Or login with existing account:'), // Add a line with "Or"                  
+                    const Text('Or login with existing account:'),                
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [

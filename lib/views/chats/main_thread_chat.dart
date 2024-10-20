@@ -4,6 +4,7 @@ import 'package:final_project/views/chats/history_thread_chats.dart';
 import 'package:final_project/views/knowledge_base/add_unit_kb_page.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
+import 'package:final_project/widgets/input_image_item.dart';
 import 'package:flutter/material.dart';
 
 class MainThreadChat extends StatefulWidget {
@@ -154,12 +155,29 @@ class _MainChatPageState extends State<MainThreadChat> {
                               ),
                             ],
                           ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.send,
-                              color: AppColors.primaryColor,
-                            ),
-                            onPressed: () {},
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.image,
+                                  color: AppColors.primaryColor,
+                                ),
+                                onPressed: () {
+                                  Utils.showBottomSheet(
+                                  context,
+                                  sheet: const InputImage(),
+                                  showFullScreen: true,
+                                );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.send,
+                                  color: AppColors.primaryColor,
+                                ),
+                                onPressed: () {},
+                              ),
+                            ],
                           ),
                         ],
                       ),
