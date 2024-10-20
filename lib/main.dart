@@ -5,6 +5,7 @@ import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:final_project/views/knowledge_base/kb_page.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/views/authentication/register_page.dart';
+import 'package:final_project/views/authentication/login_gmail_page.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -25,13 +26,14 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // Start with the RegisterPage
-      home: const RegisterPage(),
+      initialRoute: AppRoutes.register,
       debugShowCheckedModeBanner: false,
       routes: {
         AppRoutes.homeChat: (_) => const MainThreadChat(),
         AppRoutes.chatBotAI : (_) => const ChatbotAIPage(),
         AppRoutes.knowledgeBase : (_) => const KBPage(),
-        AppRoutes.authentication : (_) => const RegisterPage(),  
+        AppRoutes.register : (_) => const RegisterPage(),  
+        AppRoutes.loginGmail : (_) => const LoginGmailPage(),
       },
     );
   }
