@@ -1,6 +1,7 @@
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/add_chatbot_ai_page.dart';
+import 'package:final_project/views/chatbot_ai/preview_chatbot_ai_page.dart';
 import 'package:final_project/widgets/chatbot_ai_item.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
@@ -62,18 +63,19 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
           ),
           Expanded(
             child: ListView(
-              children: const <Widget>[
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-                ChatbotAIItem(),
-              ],
+              children: _items.map((item) {
+              return GestureDetector(
+                onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                  builder: (context) => const PreviewChatbot(),
+                  ),
+                );
+                },
+                child: const ChatbotAIItem(),
+              );
+              }).toList(),
             ),
           ),
         ],
