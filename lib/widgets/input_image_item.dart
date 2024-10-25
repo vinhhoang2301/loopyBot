@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
 
@@ -14,18 +13,15 @@ class InputImage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-          
             ElevatedButton(
-              onPressed: () {
-                
-              },
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+              ),
               child: const Text('Confirm'),
             ),
-            const SizedBox(height: 20), 
+            const SizedBox(height: 20),
             GridView.builder(
               shrinkWrap: true,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -33,12 +29,10 @@ class InputImage extends StatelessWidget {
                 crossAxisSpacing: 10.0,
                 mainAxisSpacing: 10.0,
               ),
-              itemCount: 10, 
+              itemCount: 10,
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () {
-                  
-                  },
+                  onTap: () {},
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
@@ -48,8 +42,6 @@ class InputImage extends StatelessWidget {
                 );
               },
             ),
-            
-            
           ],
         ),
       ),

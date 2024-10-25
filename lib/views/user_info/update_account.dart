@@ -9,26 +9,18 @@ class UpdateAccount extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(
-              Icons.close,
-              color: Colors.black,
+          title: const Text(
+            'Jarvis Premium',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
             ),
-            onPressed: () {},
           ),
+          centerTitle: true,
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Center(
-              child: Text(
-                'Jarvis Premium',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
             const SizedBox(height: 16),
 
             // Feature list
@@ -39,8 +31,7 @@ class UpdateAccount extends StatelessWidget {
             const ListTile(
               leading: Icon(Icons.check_circle),
               title: Text('AI Chat Models'),
-              subtitle:
-                  Text('GPT-3.5 & GPT-4.0/Turbo & Gemini Pro & Gemini Ultra'),
+              subtitle: Text('GPT-3.5 & GPT-4.0/Turbo & Gemini Pro & Gemini Ultra'),
             ),
             const ListTile(
               leading: Icon(Icons.check_circle),
@@ -78,15 +69,15 @@ class UpdateAccount extends StatelessWidget {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () {},
-              child: Text(
-                'Subcribe',
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                padding: const EdgeInsets.symmetric(horizontal: 100.0),
+              ),
+              child: const Text(
+                'Subscribe',
                 style: TextStyle(
                   color: Colors.white,
                 ),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                padding: EdgeInsets.symmetric(horizontal: 100.0),
               ),
             ),
           ],

@@ -1,7 +1,4 @@
-import 'package:final_project/consts/app_color.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class UserProfile extends StatelessWidget {
   const UserProfile({super.key});
@@ -11,13 +8,6 @@ class UserProfile extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(
-              Icons.menu,
-              color: Colors.black,
-            ),
-            onPressed: () {},
-          ),
           title: const Text(
             'Profile',
             style: TextStyle(
@@ -41,9 +31,7 @@ class UserProfile extends StatelessWidget {
                   child: const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Token Usage',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('Token Usage', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -82,8 +70,7 @@ class UserProfile extends StatelessWidget {
                           )),
                       const SizedBox(height: 8),
                       Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         child: const ListTile(
                           leading: Icon(Icons.person, color: Colors.blue),
                           title: Text('Username'),
@@ -91,8 +78,7 @@ class UserProfile extends StatelessWidget {
                         ),
                       ),
                       Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         child: const ListTile(
                           leading: Icon(Icons.person, color: Colors.blue),
                           title: Text('Email'),
@@ -107,8 +93,8 @@ class UserProfile extends StatelessWidget {
                   alignment: Alignment.bottomRight,
                   child: TextButton.icon(
                     onPressed: () {},
-                    icon: Icon(Icons.logout, color: Colors.red),
-                    label: Text(
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    label: const Text(
                       'Log out',
                       style: TextStyle(color: Colors.red),
                     ),

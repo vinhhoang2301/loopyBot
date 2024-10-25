@@ -4,9 +4,8 @@ import 'package:final_project/views/chatbot_ai/add_kb_chatbot_ai_page.dart';
 import 'package:final_project/views/chatbot_ai/develop_chatbot_ai.dart';
 import 'package:final_project/views/chatbot_ai/edit_chatbot_ai_page.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
-import 'package:final_project/widgets/tab_bar_widget.dart';
-import 'package:final_project/widgets/input_image_item.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PreviewChatbot extends StatefulWidget {
   const PreviewChatbot({super.key});
@@ -18,6 +17,7 @@ class PreviewChatbot extends StatefulWidget {
 class _MainChatPageState extends State<PreviewChatbot> {
   final List<String> messages = ['hehe', 'hihi', 'huhu', 'haha'];
   final TextEditingController _controller = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +29,6 @@ class _MainChatPageState extends State<PreviewChatbot> {
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.inverseTextColor,
       ),
-      // drawer: const Drawer(),
-      drawer: const TabBarWidget(),
       body: Column(
         children: [
           Expanded(
@@ -68,7 +66,7 @@ class _MainChatPageState extends State<PreviewChatbot> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Flexible(child: DropdownModelAI()),                   
+                    const Flexible(child: DropdownModelAI()),
                     Row(
                       children: [
                         IconButton(
@@ -88,10 +86,12 @@ class _MainChatPageState extends State<PreviewChatbot> {
                         IconButton(
                           tooltip: 'Develop',
                           onPressed: () {
-                            Utils.showBottomSheet(
-                              context,
-                              sheet: const DevelopChatbotAI(),
-                              showFullScreen: true,
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const DevelopChatbotAI();
+                                },
+                              ),
                             );
                           },
                           icon: const Icon(
@@ -102,10 +102,12 @@ class _MainChatPageState extends State<PreviewChatbot> {
                         IconButton(
                           tooltip: 'Add KB',
                           onPressed: () {
-                            Utils.showBottomSheet(
-                              context,
-                              sheet: const AddKBToChatbot(),
-                              showFullScreen: true,
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const AddKBToChatbot();
+                                },
+                              ),
                             );
                           },
                           icon: const Icon(
@@ -159,12 +161,8 @@ class _MainChatPageState extends State<PreviewChatbot> {
                                   Icons.image,
                                   color: AppColors.primaryColor,
                                 ),
-                                onPressed: () {
-                                  Utils.showBottomSheet(
-                                  context,
-                                  sheet: const InputImage(),
-                                  showFullScreen: true,
-                                );
+                                onPressed: () async {
+                                  final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
                                 },
                               ),
                               IconButton(

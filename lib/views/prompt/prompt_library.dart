@@ -40,10 +40,6 @@ class _PromptLibraryState extends State<PromptLibrary>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-        ),
         title: Text(
           'Prompt Library',
           style: TextStyle(fontWeight: FontWeight.bold),
