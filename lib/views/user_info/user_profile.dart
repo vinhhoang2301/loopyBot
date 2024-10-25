@@ -11,7 +11,13 @@ class UserProfile extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          leading: const Icon(Icons.menu),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.menu,
+              color: Colors.black,
+            ),
+            onPressed: () {},
+          ),
           title: const Text(
             'Profile',
             style: TextStyle(
@@ -96,12 +102,17 @@ class UserProfile extends StatelessWidget {
                     ],
                   ),
                 ),
-                ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text('Log out'),
-                  onTap: () {
-                    // Navigate to settings
-                  },
+                const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: TextButton.icon(
+                    onPressed: () {},
+                    icon: Icon(Icons.logout, color: Colors.red),
+                    label: Text(
+                      'Log out',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
                 ),
               ],
             ),
