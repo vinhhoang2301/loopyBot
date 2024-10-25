@@ -1,7 +1,8 @@
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/utils/global_methods.dart';
-import 'package:final_project/views/chatbot_ai/develop_chat_bot_ai.dart';
-import 'package:final_project/views/chats/history_thread_chats.dart';
+import 'package:final_project/views/chatbot_ai/add_kb_chatbot_ai_page.dart';
+import 'package:final_project/views/chatbot_ai/develop_chatbot_ai.dart';
+import 'package:final_project/views/chatbot_ai/edit_chatbot_ai_page.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:final_project/widgets/input_image_item.dart';
@@ -75,7 +76,7 @@ class _MainChatPageState extends State<PreviewChatbot> {
                           onPressed: () {
                             Utils.showBottomSheet(
                               context,
-                              sheet: const HistoryThreadChatPage(),
+                              sheet: const EditChatbotAIPage(),
                               showFullScreen: true,
                             );
                           },
@@ -103,12 +104,12 @@ class _MainChatPageState extends State<PreviewChatbot> {
                           onPressed: () {
                             Utils.showBottomSheet(
                               context,
-                              sheet: const HistoryThreadChatPage(),
+                              sheet: const AddKBToChatbot(),
                               showFullScreen: true,
                             );
                           },
                           icon: const Icon(
-                            Icons.access_time_outlined,
+                            Icons.book,
                             color: AppColors.primaryColor,
                           ),
                         ),
