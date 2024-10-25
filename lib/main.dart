@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.register,
       debugShowCheckedModeBanner: false,
       routes: {
-        AppRoutes.homeChat: (_) => const MainThreadChat(),
+        AppRoutes.homeChat: (_) => const MainThreadChatPage(),
         AppRoutes.chatBotAI : (_) => const ChatbotAIPage(),
         AppRoutes.knowledgeBase : (_) => const KBPage(),
         AppRoutes.register : (_) => const RegisterPage(),  
