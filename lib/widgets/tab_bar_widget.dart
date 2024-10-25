@@ -55,7 +55,7 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                 iconPath: 'assets/icon/profile.png',
               ),
               _TabBarItem(
-                onTap: () {},
+                onTap: () => Navigator.of(context).pushNamed(AppRoutes.updateAccount),
                 itemName: 'Upgrade Account',
                 iconPath: 'assets/icon/upgrade.png',
               ),
