@@ -1,10 +1,11 @@
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chats/history_thread_chats.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
-import 'package:final_project/widgets/input_image_item.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class MainThreadChatPage extends StatefulWidget {
   const MainThreadChatPage({super.key});
@@ -17,6 +18,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   final List<String> messages = ['hehe', 'hihi', 'huhu', 'haha'];
   final TextEditingController _controller = TextEditingController();
   final FocusNode _conversationNode = FocusNode();
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -166,9 +168,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                             Row(
                               children: [
                                 IconButton(
-                                  onPressed: () {
-                                    // todo: show prompt page
-                                  },
+                                  onPressed: () => Navigator.of(context).pushNamed(AppRoutes.promptPage),
                                   icon: const Icon(Icons.settings_suggest_outlined),
                                 ),
                               ],
@@ -180,12 +180,9 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                     Icons.image,
                                     color: AppColors.primaryColor,
                                   ),
-                                  onPressed: () {
-                                    Utils.showBottomSheet(
-                                      context,
-                                      sheet: const InputImage(),
-                                      showFullScreen: true,
-                                    );
+                                  onPressed: () async {
+                                    // todo: allow upload image from camera
+                                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
                                   },
                                 ),
                                 IconButton(
