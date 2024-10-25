@@ -5,4 +5,5 @@ class AppRoutes {
   static const String register = '/authentication/register';
   static const String loginGmail = '/authentication/login-gmail';
   static const String userProfile = '/profile';
+  static const String kbDetails = '/knowledge-base/details';
 }

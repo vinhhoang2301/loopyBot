@@ -104,13 +104,7 @@ class _MainChatPageState extends State<MainThreadChat> {
                         ),
                         IconButton(
                           tooltip: 'New Conversation',
-                          onPressed: () {
-                            Utils.showBottomSheet(
-                              context,
-                              sheet: const AddUnitKBPage(),
-                              showFullScreen: true,
-                            );
-                          },
+                          onPressed: () {},
                           icon: const Icon(
                             Icons.add_comment,
                             color: AppColors.primaryColor,
