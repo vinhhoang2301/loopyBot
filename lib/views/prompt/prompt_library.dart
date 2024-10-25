@@ -1,4 +1,5 @@
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/widgets/new_prompt_dialog.dart';
 import 'package:flutter/material.dart';
 
 class PromptLibrary extends StatefulWidget {
@@ -50,7 +51,14 @@ class _PromptLibraryState extends State<PromptLibrary>
         actions: [
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: () {},
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return NewPromptDialog();
+                },
+              );
+            },
             style: TextButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               shape: RoundedRectangleBorder(
