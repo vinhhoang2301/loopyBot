@@ -1,3 +1,4 @@
+import 'package:final_project/consts/app_color.dart';
 import 'package:flutter/material.dart';
 
 class ChatbotAIItem extends StatelessWidget {
@@ -5,14 +6,22 @@ class ChatbotAIItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: AppColors.secondaryColor.withOpacity(0.7),
+      ),
       child: Row(
         children: [
-          Image.asset(
-            'assets/unnamed.jpeg',
-            height: 100,
-            width: 100,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/unnamed.jpeg',
+              height: 80,
+              width: 80,
+            ),
           ),
           Expanded(
             child: Padding(
