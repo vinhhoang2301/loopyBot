@@ -50,7 +50,7 @@ class _TabBarWidgetState extends State<TabBarWidget> {
           Column(
             children: [
               _TabBarItem(
-                onTap: () {},
+                onTap: () => Navigator.of(context).pushNamed(AppRoutes.userProfile),
                 itemName: 'Profile',
                 iconPath: 'assets/icon/profile.png',
               ),
