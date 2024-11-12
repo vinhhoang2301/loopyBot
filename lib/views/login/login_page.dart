@@ -1,20 +1,88 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/textfield_item.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../../consts/app_routes.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
-  // Text Controller
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final secureStorage = FlutterSecureStorage();
 
   // Sign In Method
-  void signIn() {}
+  Future<void> signIn(
+      BuildContext context, String username, String password) async {
+    var headers = {'x-jarvis-guid': '', 'Content-Type': 'application/json'};
+    var request =
+        http.Request('POST', Uri.parse('$devServer/api/v1/auth/sign-in'));
+    request.body = json.encode({"email": username, "password": password});
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // log(await response.stream.bytesToString());
+      final result = jsonDecode(await response.stream.bytesToString());
+      final refreshToken = result['token']['refreshToken'];
+      await secureStorage.write(key: 'refreshToken', value: refreshToken);
+      log(refreshToken ?? 'null');
+
+      Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
+    } else {
+      log(response.reasonPhrase.toString());
+    }
+  }
+
   void signInWithGoogle() {}
 
   @override
+  void initState() {
+    super.initState();
+    _initRefreshToken();
+  }
+
+  void _initRefreshToken() async {
+    String? refreshToken = await getRefreshToken();
+    log('Refresh Token: ' + refreshToken.toString());
+    if (refreshToken != null) {
+      //
+      var headers = {'x-jarvis-guid': ''};
+      var request = http.Request(
+          'GET',
+          Uri.parse(
+              '$devServer/api/v1/auth/refresh?refreshToken=$refreshToken'));
+      request.headers.addAll(headers);
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200) {
+        log(await response.stream.bytesToString());
+      } else {
+        log(response.reasonPhrase.toString());
+      }
+
+      Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
+    }
+  }
+
+  Future<String?> getRefreshToken() async {
+    final res = await secureStorage.read(key: 'refreshToken');
+    return res;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Text Controller
+    final usernameController = TextEditingController();
+    final passwordController = TextEditingController();
     return Scaffold(
       backgroundColor: Colors.grey[300],
       body: SafeArea(
@@ -53,6 +121,7 @@ class LoginPage extends StatelessWidget {
 
               // Username textField
               TextFieldItem(
+                // TODO: change username to email
                 controller: usernameController,
                 hintText: 'Username',
                 obscureText: false,
@@ -92,7 +161,11 @@ class LoginPage extends StatelessWidget {
 
               // login button
               GestureDetector(
-                onTap: signIn,
+                onTap: () => signIn(
+                  context,
+                  usernameController.text,
+                  passwordController.text,
+                ),
                 child: Container(
                   padding: const EdgeInsets.all(25.0),
                   margin: const EdgeInsets.symmetric(horizontal: 25.0),
