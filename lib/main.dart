@@ -4,6 +4,7 @@ import 'package:final_project/views/chatbot_ai/chatbot_ai_page.dart';
 import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:final_project/views/knowledge_base/kb_details_page.dart';
 import 'package:final_project/views/knowledge_base/kb_page.dart';
+import 'package:final_project/views/login/login_page.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
 import 'package:final_project/views/user_info/update_account.dart';
 import 'package:final_project/views/user_info/user_profile.dart';
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // Start with the RegisterPage
-      initialRoute: AppRoutes.register,
+      initialRoute: AppRoutes.loginPage,
       debugShowCheckedModeBanner: false,
       routes: {
         AppRoutes.homeChat: (_) => const MainThreadChatPage(),
@@ -42,8 +43,8 @@ class MyApp extends StatelessWidget {
         AppRoutes.userProfile: (_) => const UserProfile(),
         AppRoutes.kbDetails: (_) => const KbDetailsPage(),
         AppRoutes.promptPage: (_) => const PromptLibrary(),
-        AppRoutes.updateAccount: (_) => const UpdateAccount(
-        ),
+        AppRoutes.updateAccount: (_) => const UpdateAccount(),
+        AppRoutes.loginPage: (_) => const LoginPage(),
       },
     );
   }
