@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/main.dart';
+import 'package:final_project/providers/auth_provider.dart';
 import 'package:final_project/widgets/textfield_item.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import '../../consts/app_routes.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -35,6 +38,11 @@ class _LoginPageState extends State<LoginPage> {
       final refreshToken = result['token']['refreshToken'];
       await secureStorage.write(key: 'refreshToken', value: refreshToken);
       log(refreshToken ?? 'null');
+
+      await context.read<AuthProvider>().setTokens(
+            accessToken: '',
+            refreshToken: refreshToken,
+          );
 
       Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
     } else {
