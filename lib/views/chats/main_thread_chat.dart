@@ -28,20 +28,21 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   final ImagePicker _picker = ImagePicker();
 
   late final String? accessToken;
-  late int totalTokens = -1;
+  int availableTokens = 0;
   late AiAgentModel currentAiAgent;
 
   String? _conversationId;
 
   @override
   void initState() {
+    super.initState();
+    
+    initChatTokens();
+
     _conversationNode.addListener(() {
       setState(() {});
     });
 
-    initChatTokens();
-
-    super.initState();
   }
 
   @override
@@ -50,13 +51,6 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     super.dispose();
   }
 
-  void initChatTokens() async {
-    totalTokens = await getTotalTokens();
-  }
-
-  Future<int> getTotalTokens() async {
-    return await TokenService.getTotalToken(context);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +111,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                             const Icon(Icons.local_fire_department_rounded),
                             const SizedBox(width: 4),
                             Text(
-                              totalTokens.toString(),
+                              availableTokens.toString(),
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(width: 4),
@@ -227,8 +221,11 @@ class _MainChatPageState extends State<MainThreadChatPage> {
         ),
       ),
     );
+  }
 
-
+  Future<void> initChatTokens() async {
+    availableTokens = await TokenService.getAvailableTokens(context);
+    setState(() {});
   }
 
   Future<void> _sendMessage(String? conversationId) async {
@@ -264,7 +261,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
           ),
         );
 
-        totalTokens = response.remainingUsage!;
+        availableTokens = response.remainingUsage!;
         _conversationId = response.conversationId!;
       });
     }
