@@ -1,5 +1,10 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
+import 'package:final_project/models/chat_response_model.dart';
+import 'package:final_project/services/ai_chat_service.dart';
+import 'package:final_project/services/token_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chats/history_thread_chats.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
@@ -15,23 +20,45 @@ class MainThreadChatPage extends StatefulWidget {
 }
 
 class _MainChatPageState extends State<MainThreadChatPage> {
-  final List<String> messages = ['hehe', 'hihi', 'huhu', 'haha'];
-  final TextEditingController _controller = TextEditingController();
+  final List<ChatResponseModel> messages = [];
+  final TextEditingController _chatController = TextEditingController();
   final FocusNode _conversationNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
 
+  late final String? accessToken;
+  late int totalTokens = -1;
+  late int availableTokens = -1;
+
+  String modelId = '';
+
   @override
   void initState() {
-    super.initState();
     _conversationNode.addListener(() {
       setState(() {});
     });
+
+    initChatTokens();
+
+    super.initState();
   }
 
   @override
   void dispose() {
     _conversationNode.dispose();
     super.dispose();
+  }
+
+  void initChatTokens() async {
+    totalTokens = await getTotalTokens();
+    availableTokens = await getAvailableTokens();
+  }
+
+  Future<int> getTotalTokens() async {
+    return await TokenService.getTotalToken(context);
+  }
+
+  Future<int> getAvailableTokens() async {
+    return await TokenService.getAvailableTokens(context);
   }
 
   @override
@@ -56,18 +83,22 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                 reverse: true,
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
+                  final message = messages[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
                     child: Align(
-                      alignment: Alignment.centerRight,
+                      alignment: message.remainingUsage == -1 ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.8,
+                        ),
                         padding: const EdgeInsets.all(12.0),
                         decoration: BoxDecoration(
-                          color: Colors.blueAccent.withOpacity(0.2),
+                          color: message.remainingUsage == -1 ? Colors.blueAccent.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: Text(
-                          messages[messages.length - 1 - index],
+                          message.message,
                           style: const TextStyle(fontSize: 16.0),
                         ),
                       ),
@@ -86,8 +117,13 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Flexible(
-                        child: DropdownModelAI(),
+                      Flexible(
+                        child: DropdownModelAI(
+                          onModelSelected: (String id) {
+                            setState(() => modelId = id);
+                            log('Selected AI Model AI: $modelId');
+                          },
+                        ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
@@ -100,7 +136,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                             const Icon(Icons.local_fire_department_rounded),
                             const SizedBox(width: 4),
                             Text(
-                              '30',
+                              availableTokens.toString(),
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(width: 4),
@@ -150,15 +186,17 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: TextField(
-                            controller: _controller,
+                            controller: _chatController,
                             focusNode: _conversationNode,
                             minLines: 1,
                             maxLines: 4,
                             expands: false,
-                            onSubmitted: (value) {},
                             decoration: const InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Ask me anything',
+                            ),
+                            style: const TextStyle(
+                              color: Colors.black,
                             ),
                           ),
                         ),
@@ -190,8 +228,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                     Icons.send,
                                     color: AppColors.primaryColor,
                                   ),
-                                  onPressed: () {
-                                    // todo: send message action
+                                  onPressed: () async {
+                                    await _sendMessage();
                                   },
                                 ),
                               ],
@@ -208,5 +246,33 @@ class _MainChatPageState extends State<MainThreadChatPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _sendMessage() async {
+    if (_chatController.text.trim().isEmpty || modelId.isEmpty) return;
+
+    final userMessage = ChatResponseModel(
+      message: _chatController.text.trim(),
+      conversationId: '',
+      remainingUsage: -1,
+    );
+
+    setState(() {
+      messages.insert(0, userMessage);
+      _chatController.clear();
+    });
+
+    final response = await AiChatServices.doAiChat(
+      context,
+      modelId: modelId,
+      msg: userMessage.message,
+    );
+
+    if (response != null) {
+      setState(() {
+        messages.insert(0, response);
+        availableTokens = response.remainingUsage;
+      });
+    }
   }
 }
