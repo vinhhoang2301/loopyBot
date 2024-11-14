@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/app_color.dart';
-import 'package:final_project/main.dart';
+import 'package:final_project/consts/key.dart';
 import 'package:final_project/providers/auth_provider.dart';
 import 'package:final_project/widgets/textfield_item.dart';
 import 'package:flutter/material.dart';
@@ -55,13 +55,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _initRefreshToken();
+    // _initRefreshToken();
   }
 
   void _initRefreshToken() async {
     String? refreshToken = await getRefreshToken();
     log('Refresh Token: ' + refreshToken.toString());
-    if (refreshToken != null) {
+    if (refreshToken != null && refreshToken.isNotEmpty) {
       //
       var headers = {'x-jarvis-guid': ''};
       var request = http.Request(
@@ -71,8 +71,16 @@ class _LoginPageState extends State<LoginPage> {
       request.headers.addAll(headers);
       http.StreamedResponse response = await request.send();
 
-      if (response.statusCode == 200) {
-        log(await response.stream.bytesToString());
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = jsonDecode(await response.stream.bytesToString());
+        final accessToken = result[TOKEN][ACCESS_TOKEN];
+
+        log('access token: $accessToken');
+
+        context.read<AuthProvider>().setTokens(
+              accessToken: accessToken,
+              refreshToken: '',
+            );
       } else {
         log(response.reasonPhrase.toString());
       }
