@@ -22,7 +22,7 @@ class MainThreadChatPage extends StatefulWidget {
 }
 
 class _MainChatPageState extends State<MainThreadChatPage> {
-  final List<ChatMetaData> messages = [];
+  final List<ChatMetaData> _messages = [];
   final TextEditingController _chatController = TextEditingController();
   final FocusNode _conversationNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
@@ -36,13 +36,12 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   @override
   void initState() {
     super.initState();
-    
+
     initChatTokens();
 
     _conversationNode.addListener(() {
       setState(() {});
     });
-
   }
 
   @override
@@ -50,7 +49,6 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     _conversationNode.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +70,13 @@ class _MainChatPageState extends State<MainThreadChatPage> {
             Expanded(
               child: ListView.builder(
                 reverse: true,
-                itemCount: messages.length,
+                itemCount: _messages.length,
                 itemBuilder: (context, index) {
-                  final message = messages[index];
+                  final message = _messages[index];
                   return ChatMessageWidget(
                     isUser: message.role == "user",
                     content: message.content ?? '',
+                    aiAgentThumbnail: message.assistant!.thumbnail,
                   );
                 },
               ),
@@ -101,7 +100,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6.0, vertical: 4.0),
                         decoration: BoxDecoration(
                           color: AppColors.secondaryColor,
                           borderRadius: BorderRadius.circular(16),
@@ -137,7 +137,11 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                           IconButton(
                             tooltip: 'New Conversation',
                             onPressed: () {
-                              // todo: reset all state (text editing, conversation id, ...)
+                              setState(() {
+                                _chatController.clear();
+                                _conversationId = null;
+                                _messages.clear();
+                              });
                             },
                             icon: const Icon(
                               Icons.add_comment,
@@ -151,7 +155,9 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: _conversationNode.hasFocus ? AppColors.primaryColor : AppColors.backgroundColor2,
+                        color: _conversationNode.hasFocus
+                            ? AppColors.primaryColor
+                            : AppColors.backgroundColor2,
                         width: _conversationNode.hasFocus ? 2.0 : 1.0,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -181,8 +187,10 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                             Row(
                               children: [
                                 IconButton(
-                                  onPressed: () => Navigator.of(context).pushNamed(AppRoutes.promptPage),
-                                  icon: const Icon(Icons.settings_suggest_outlined),
+                                  onPressed: () => Navigator.of(context)
+                                      .pushNamed(AppRoutes.promptPage),
+                                  icon: const Icon(
+                                      Icons.settings_suggest_outlined),
                                 ),
                               ],
                             ),
@@ -195,7 +203,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                   ),
                                   onPressed: () async {
                                     // todo: allow upload image from camera
-                                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                                    final XFile? pickedFile = await _picker
+                                        .pickImage(source: ImageSource.gallery);
                                   },
                                 ),
                                 IconButton(
@@ -229,7 +238,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   }
 
   Future<void> _sendMessage(String? conversationId) async {
-    if (_chatController.text.trim().isEmpty || currentAiAgent.id.isEmpty) return;
+    if (_chatController.text.trim().isEmpty || currentAiAgent.id.isEmpty)
+      return;
 
     final userMessage = ChatMetaData(
       content: _chatController.text.trim(),
@@ -238,7 +248,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     );
 
     setState(() {
-      messages.insert(0, userMessage);
+      _messages.insert(0, userMessage);
       _chatController.clear();
     });
 
@@ -247,12 +257,12 @@ class _MainChatPageState extends State<MainThreadChatPage> {
       content: userMessage.content!,
       aiAgent: currentAiAgent,
       id: conversationId,
-      metaDataMessages: messages,
+      metaDataMessages: _messages,
     );
 
     if (response != null) {
       setState(() {
-        messages.insert(
+        _messages.insert(
           0,
           ChatMetaData(
             role: "model",
