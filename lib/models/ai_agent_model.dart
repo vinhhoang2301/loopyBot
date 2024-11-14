@@ -1,3 +1,5 @@
+import 'package:final_project/consts/key.dart';
+
 class AiAgentModel {
   final String id;
   final String name;
@@ -8,4 +10,13 @@ class AiAgentModel {
     required this.name,
     required this.thumbnail,
   });
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['model'] = DIFY;
+    data['name'] = name;
+    
+    return data;
+  }
 }

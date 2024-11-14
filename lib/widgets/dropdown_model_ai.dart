@@ -32,7 +32,7 @@ class DropdownModelAI extends StatefulWidget {
     super.key,
     this.onModelSelected,
   });
-  final Function(String)? onModelSelected;
+  final Function(AiAgentModel)? onModelSelected;
 
   @override
   State<DropdownModelAI> createState() => _DropdownModelAIState();
@@ -69,7 +69,7 @@ class _DropdownModelAIState extends State<DropdownModelAI> {
           setState(() => _selectedValue = newValue);
 
           if (newValue != null && widget.onModelSelected != null) {
-            widget.onModelSelected!(newValue.id);
+            widget.onModelSelected!(newValue);
           }
         },
         items: aiAgentsList.map<DropdownMenuItem<AiAgentModel>>((AiAgentModel value) {

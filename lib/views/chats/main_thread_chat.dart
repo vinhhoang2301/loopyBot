@@ -2,11 +2,13 @@ import 'dart:developer';
 
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
-import 'package:final_project/models/chat_response_model.dart';
+import 'package:final_project/models/ai_agent_model.dart';
+import 'package:final_project/models/chat_metadata.dart';
 import 'package:final_project/services/ai_chat_service.dart';
 import 'package:final_project/services/token_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chats/history_thread_chats.dart';
+import 'package:final_project/widgets/chat_message_widget.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
@@ -20,16 +22,16 @@ class MainThreadChatPage extends StatefulWidget {
 }
 
 class _MainChatPageState extends State<MainThreadChatPage> {
-  final List<ChatResponseModel> messages = [];
+  final List<ChatMetaData> messages = [];
   final TextEditingController _chatController = TextEditingController();
   final FocusNode _conversationNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
 
   late final String? accessToken;
   late int totalTokens = -1;
-  late int availableTokens = -1;
+  late AiAgentModel currentAiAgent;
 
-  String modelId = '';
+  String? _conversationId;
 
   @override
   void initState() {
@@ -50,15 +52,10 @@ class _MainChatPageState extends State<MainThreadChatPage> {
 
   void initChatTokens() async {
     totalTokens = await getTotalTokens();
-    availableTokens = await getAvailableTokens();
   }
 
   Future<int> getTotalTokens() async {
     return await TokenService.getTotalToken(context);
-  }
-
-  Future<int> getAvailableTokens() async {
-    return await TokenService.getAvailableTokens(context);
   }
 
   @override
@@ -84,25 +81,9 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
                   final message = messages[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                    child: Align(
-                      alignment: message.remainingUsage == -1 ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.8,
-                        ),
-                        padding: const EdgeInsets.all(12.0),
-                        decoration: BoxDecoration(
-                          color: message.remainingUsage == -1 ? Colors.blueAccent.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Text(
-                          message.message,
-                          style: const TextStyle(fontSize: 16.0),
-                        ),
-                      ),
-                    ),
+                  return ChatMessageWidget(
+                    isUser: message.role == "user",
+                    content: message.content ?? '',
                   );
                 },
               ),
@@ -119,9 +100,9 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                     children: [
                       Flexible(
                         child: DropdownModelAI(
-                          onModelSelected: (String id) {
-                            setState(() => modelId = id);
-                            log('Selected AI Model AI: $modelId');
+                          onModelSelected: (AiAgentModel aiAgent) {
+                            setState(() => currentAiAgent = aiAgent);
+                            log('Selected AI Model AI: ${currentAiAgent.id}');
                           },
                         ),
                       ),
@@ -136,7 +117,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                             const Icon(Icons.local_fire_department_rounded),
                             const SizedBox(width: 4),
                             Text(
-                              availableTokens.toString(),
+                              totalTokens.toString(),
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(width: 4),
@@ -162,7 +143,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                           IconButton(
                             tooltip: 'New Conversation',
                             onPressed: () {
-                              // todo: create new conversation
+                              // todo: reset all state (text editing, conversation id, ...)
                             },
                             icon: const Icon(
                               Icons.add_comment,
@@ -229,7 +210,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                     color: AppColors.primaryColor,
                                   ),
                                   onPressed: () async {
-                                    await _sendMessage();
+                                    await _sendMessage(_conversationId);
                                   },
                                 ),
                               ],
@@ -246,15 +227,17 @@ class _MainChatPageState extends State<MainThreadChatPage> {
         ),
       ),
     );
+
+
   }
 
-  Future<void> _sendMessage() async {
-    if (_chatController.text.trim().isEmpty || modelId.isEmpty) return;
+  Future<void> _sendMessage(String? conversationId) async {
+    if (_chatController.text.trim().isEmpty || currentAiAgent.id.isEmpty) return;
 
-    final userMessage = ChatResponseModel(
-      message: _chatController.text.trim(),
-      conversationId: '',
-      remainingUsage: -1,
+    final userMessage = ChatMetaData(
+      content: _chatController.text.trim(),
+      assistant: currentAiAgent,
+      role: "user",
     );
 
     setState(() {
@@ -262,16 +245,27 @@ class _MainChatPageState extends State<MainThreadChatPage> {
       _chatController.clear();
     });
 
-    final response = await AiChatServices.doAiChat(
+    final response = await AiChatServices.sendMessages(
       context,
-      modelId: modelId,
-      msg: userMessage.message,
+      content: userMessage.content!,
+      aiAgent: currentAiAgent,
+      id: conversationId,
+      metaDataMessages: messages,
     );
 
     if (response != null) {
       setState(() {
-        messages.insert(0, response);
-        availableTokens = response.remainingUsage;
+        messages.insert(
+          0,
+          ChatMetaData(
+            role: "model",
+            assistant: currentAiAgent,
+            content: response.message,
+          ),
+        );
+
+        totalTokens = response.remainingUsage!;
+        _conversationId = response.conversationId!;
       });
     }
   }
