@@ -6,6 +6,7 @@ import 'package:final_project/consts/key.dart';
 import 'package:final_project/models/ai_agent_model.dart';
 import 'package:final_project/models/ai_response_model.dart';
 import 'package:final_project/models/chat_metadata.dart';
+import 'package:final_project/models/conversation_model.dart';
 import 'package:final_project/services/authen_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -61,5 +62,33 @@ class AiChatServices {
 
     log(response.reasonPhrase.toString());
     return null;
+  }
+
+  static Future<List<ConversationModel>> getConversations(
+    BuildContext context, {
+    required String assistantId,
+  }) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken'
+    };
+    var request = http.Request('GET', Uri.parse('$devServer/api/v1/ai-chat/conversations?assistantId=$assistantId&assistantModel=$DIFY'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final result = jsonDecode(await response.stream.bytesToString());
+
+      return (result['items'] as List<dynamic>)
+          .map((item) => ConversationModel.fromJson(item))
+          .toList();
+    }
+
+    log(response.reasonPhrase.toString());
+    return [];
   }
 }
