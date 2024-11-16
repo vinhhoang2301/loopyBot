@@ -91,4 +91,47 @@ class AiChatServices {
     log(response.reasonPhrase.toString());
     return [];
   }
+
+  static Future<List<ChatMetaData>> getConversationHistory(BuildContext context, {required String conversationId, required String assistantId}) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+    List<ChatMetaData> chatMetaData = [];
+
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken'
+    };
+    var request = http.Request('GET', Uri.parse('$devServer/api/v1/ai-chat/conversations/$conversationId/messages?assistantId=$assistantId&assistantModel=$DIFY'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final result = jsonDecode(await response.stream.bytesToString());
+      final items = result['items'];
+
+      for (final item in items) {
+        final userMsg = ChatMetaData(
+          role: 'user',
+          content: item['query'],
+        );
+
+        final modelAns = ChatMetaData(
+          role: 'model',
+          content: item['answer'],
+        );
+
+        // todo: support file
+
+        chatMetaData.add(userMsg);
+        chatMetaData.add(modelAns);
+      }
+
+      chatMetaData = chatMetaData.reversed.toList();
+      return chatMetaData;
+    } else {
+      log(response.reasonPhrase.toString());
+      return [];
+    }
+  }
 }

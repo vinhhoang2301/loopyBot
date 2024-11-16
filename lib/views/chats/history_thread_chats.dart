@@ -131,7 +131,9 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                 itemCount: _listConversations.length,
                 itemBuilder: (context, index) {
                   final thread = _listConversations[index];
+
                   return ThreadChatItem(
+                    id: thread.id ?? '',
                     title: thread.title ?? '',
                     createAt: thread.createdAt ?? 0,
                   );
@@ -143,6 +145,4 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
       ),
     );
   }
-
-
 }
