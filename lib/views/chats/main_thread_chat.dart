@@ -32,11 +32,12 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   final ImagePicker _picker = ImagePicker();
 
   late final String? accessToken;
-  int availableTokens = 0;
   late AiAgentModel currentAiAgent;
 
   List<ChatMetaData> _messages = [];
   String? _conversationId;
+  int availableTokens = 0;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -46,7 +47,6 @@ class _MainChatPageState extends State<MainThreadChatPage> {
 
     if (widget.conversationId != null && widget.conversationId!.isNotEmpty) {
       _conversationId = widget.conversationId;
-
       initHistory();
     }
 
@@ -79,19 +79,24 @@ class _MainChatPageState extends State<MainThreadChatPage> {
         body: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                reverse: true,
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
-                  
-                  return ChatMessageWidget(
-                    isUser: message.role == "user",
-                    content: message.content ?? '',
-                    aiAgentThumbnail: message.assistant?.thumbnail ?? 'assets/icon/robot.png',
-                  );
-                },
-              ),
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : ListView.builder(
+                      reverse: true,
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        final message = _messages[index];
+
+                        return ChatMessageWidget(
+                          isUser: message.role == "user",
+                          content: message.content ?? '',
+                          aiAgentThumbnail: message.assistant?.thumbnail ??
+                              'assets/icon/robot.png',
+                        );
+                      },
+                    ),
             ),
             const Divider(height: 1.0),
             Padding(
@@ -250,13 +255,29 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   }
 
   Future<void> initHistory() async {
-    _messages = await AiChatServices.getConversationHistory(
-      context,
-      conversationId: widget.conversationId ?? '',
-      assistantId: 'gpt-4o',
-    );
+    setState(() => isLoading = true);
 
-    setState(() {});
+    try {
+      _messages = await AiChatServices.getConversationHistory(
+        context,
+        conversationId: widget.conversationId ?? '',
+        assistantId: 'gpt-4o',
+      );
+    } catch (e) {
+      log('Error loading history chat: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load chat history'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   Future<void> _sendMessage(String? conversationId) async {
