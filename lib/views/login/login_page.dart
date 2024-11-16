@@ -97,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     // Text Controller
-    final usernameController = TextEditingController();
+    final emailController = TextEditingController();
     final passwordController = TextEditingController();
     return Scaffold(
       backgroundColor: Colors.grey[300],
@@ -137,9 +137,8 @@ class _LoginPageState extends State<LoginPage> {
 
               // Username textField
               TextFieldItem(
-                // TODO: change username to email
-                controller: usernameController,
-                hintText: 'Username',
+                controller: emailController,
+                hintText: 'Email',
                 obscureText: false,
               ),
 
@@ -179,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
               GestureDetector(
                 onTap: () => signIn(
                   context,
-                  usernameController.text,
+                  emailController.text,
                   passwordController.text,
                 ),
                 child: Container(
