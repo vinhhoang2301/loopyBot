@@ -3,8 +3,7 @@ import 'package:final_project/widgets/new_prompt_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/services/prompt_service.dart'; // Import the PromptService
 import 'package:final_project/models/prompt_model.dart'; // Import the PromptModel
-
-// Define a list of prompts
+//Private prompts default
 List<String> myPrompts = [
   'What is your name?',
   'How old are you?',
@@ -24,8 +23,8 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   List<PromptModel> filteredPrompts = [];
   bool isLoading = true;
   String searchQuery = '';
-  String selectedCategory = '';
-  List<String> categories = ['All', 'business', 'coding', 'writing', 'productivity', 'education', 'seo', 'marketing', 'ai_painting', 'career'];
+  PromptCategory selectedCategory = PromptCategory.all;
+  List<PromptCategory> categories = PromptCategory.values;
 
   @override
   void initState() {
@@ -33,10 +32,14 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     _tabController = TabController(length: 2, vsync: this);
     fetchPrompts();
   }
+  //Send API request to fetch prompts
+  Future<void> fetchPrompts({PromptCategory category = PromptCategory.all, String searchQuery = ''}) async {
+    setState(() {
+      isLoading = true;
+    });
 
-  Future<void> fetchPrompts() async {
     try {
-      List<PromptModel> prompts = await PromptService().fetchPrompts(context);
+      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery);
       setState(() {
         publicPrompts = prompts;
         filteredPrompts = prompts;
@@ -51,17 +54,54 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   }
 
   void filterPrompts() {
-    setState(() {
-      if (searchQuery.isEmpty && (selectedCategory == 'All' || selectedCategory.isEmpty)) {
-        filteredPrompts = publicPrompts;
-      } else {
-        filteredPrompts = publicPrompts.where((prompt) {
-          final matchesSearchQuery = prompt.title.toLowerCase().contains(searchQuery.toLowerCase()) || prompt.description.toLowerCase().contains(searchQuery.toLowerCase());
-          final matchesCategory = selectedCategory == 'All' || prompt.category == selectedCategory;
-          return matchesSearchQuery && matchesCategory;
-        }).toList();
-      }
-    });
+    fetchPrompts(category: selectedCategory, searchQuery: searchQuery);
+  }
+
+  Widget buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.search),
+          hintText: 'Search...',
+          hintStyle: TextStyle(color: Colors.black), // Set hint text color to black
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        style: TextStyle(color: Colors.black), // Set typed text color to black
+        onChanged: (value) {
+          searchQuery = value;
+          filterPrompts();
+        },
+      ),
+    );
+  }
+
+  Widget buildCategorySelection() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: categories.map((category) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: ChoiceChip(
+                label: Text(promptCategoryLabels[category]!),
+                selected: selectedCategory == category,
+                onSelected: (bool selected) {
+                  setState(() {
+                    selectedCategory = category;
+                    filterPrompts();
+                  });
+                },
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -99,11 +139,19 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          buildMyPromptsList(),
-          buildPublicPromptsList(),
+          buildSearchBar(),
+          buildCategorySelection(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                buildMyPromptsList(),
+                buildPublicPromptsList(),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -142,79 +190,32 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       return Center(child: CircularProgressIndicator());
     }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-            child: TextField(
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Search...',
-              hintStyle: TextStyle(color: Colors.black), // Set hint text color to black
-              border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+    return ListView.builder(
+      itemCount: filteredPrompts.length,
+      itemBuilder: (context, index) {
+        PromptModel prompt = filteredPrompts[index];
+        return ListTile(
+          title: Text(prompt.title, style: TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(prompt.description),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.star_border),
+                onPressed: () {},
               ),
-            ),
-            style: TextStyle(color: Colors.black), // Set typed text color to black
-            onChanged: (value) {
-              searchQuery = value;
-              filterPrompts();
-            },
-            ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: categories.map((category) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: ChoiceChip(
-                    label: Text(category),
-                    selected: selectedCategory == category,
-                    onSelected: (bool selected) {
-                      setState(() {
-                        selectedCategory = category;
-                        filterPrompts();
-                      });
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
+              IconButton(
+                icon: Icon(Icons.info_outline),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: Icon(Icons.arrow_forward),
+                onPressed: () {},
+              ),
+            ],
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: filteredPrompts.length,
-            itemBuilder: (context, index) {
-              PromptModel prompt = filteredPrompts[index];
-              return ListTile(
-                title: Text(prompt.title, style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(prompt.description),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.star_border),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.info_outline),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.arrow_forward),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
