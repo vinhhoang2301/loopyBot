@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/models/conversation_model.dart';
 import 'package:final_project/services/ai_chat_service.dart';
@@ -13,12 +15,17 @@ class HistoryThreadChatPage extends StatefulWidget {
 
 class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
   final FocusNode _searchNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
+
   List<ConversationModel> _listConversations = [];
+  List<ConversationModel> _filteredConversations = [];
+  bool isLoading = false;
 
   @override
   void initState() {
     _getConversationsData();
 
+    _searchController.addListener(onSearchChanged);
     _searchNode.addListener(() {
       setState(() {});
     });
@@ -26,12 +33,11 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
     super.initState();
   }
 
-  Future<void> _getConversationsData() async {
-    _listConversations = await AiChatServices.getConversations(
-      context,
-      assistantId: 'gpt-4o-mini',
-    );
-    setState(() {});
+  @override
+  void dispose() {
+    _searchNode.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,9 +77,12 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
               children: [
                 Flexible(
                   child: TextField(
+                    controller: _searchController,
                     focusNode: _searchNode,
+                    style: const TextStyle(color: Colors.black),
                     decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 16.0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: const BorderSide(
@@ -83,7 +92,15 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                       ),
                       hintText: 'Search conversation',
                       hintStyle: TextStyle(color: Colors.grey[600]),
-                      suffixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: Colors.red,
+                              ),
+                              onPressed: _searchController.clear,
+                            )
+                          : const Icon(Icons.search),
                     ),
                   ),
                 ),
@@ -91,7 +108,8 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 12),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: AppColors.backgroundColor2,
@@ -107,7 +125,8 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
                     ),
                     const SizedBox(width: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 12),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: AppColors.backgroundColor2,
@@ -126,23 +145,67 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
               ],
             ),
             const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _listConversations.length,
-                itemBuilder: (context, index) {
-                  final thread = _listConversations[index];
-                  return ThreadChatItem(
-                    title: thread.title ?? '',
-                    createAt: thread.createdAt ?? 0,
-                  );
-                },
-              ),
-            ),
+            isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: _filteredConversations.length,
+                      itemBuilder: (context, index) {
+                        final thread = _filteredConversations[index];
+                        return ThreadChatItem(
+                          id: thread.id ?? '',
+                          title: thread.title ?? '',
+                          createAt: thread.createdAt ?? 0,
+                        );
+                      },
+                    ),
+                  ),
           ],
         ),
       ),
     );
   }
 
+  Future<void> _getConversationsData() async {
+    setState(() => isLoading = true);
 
+    try {
+      _listConversations = await AiChatServices.getConversations(
+        context,
+        assistantId: 'gpt-4o-mini',
+      );
+
+      _filteredConversations = _listConversations;
+    } catch (e) {
+      log('Error when loading history thread chats: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load conversations'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  void onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
+
+    setState(() {
+      if (query.isEmpty) {
+        _filteredConversations = _listConversations;
+      } else {
+        _filteredConversations = _listConversations.where((conversation) {
+          return conversation.title?.toLowerCase().contains(query) ?? false;
+        }).toList();
+      }
+    });
+  }
 }

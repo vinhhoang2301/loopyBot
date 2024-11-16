@@ -15,29 +15,40 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class MainThreadChatPage extends StatefulWidget {
-  const MainThreadChatPage({super.key});
+  const MainThreadChatPage({
+    super.key,
+    this.conversationId,
+  });
+
+  final String? conversationId;
 
   @override
   State<MainThreadChatPage> createState() => _MainChatPageState();
 }
 
 class _MainChatPageState extends State<MainThreadChatPage> {
-  final List<ChatMetaData> _messages = [];
   final TextEditingController _chatController = TextEditingController();
   final FocusNode _conversationNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
 
   late final String? accessToken;
-  int availableTokens = 0;
   late AiAgentModel currentAiAgent;
 
+  List<ChatMetaData> _messages = [];
   String? _conversationId;
+  int availableTokens = 0;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
 
     initChatTokens();
+
+    if (widget.conversationId != null && widget.conversationId!.isNotEmpty) {
+      _conversationId = widget.conversationId;
+      initHistory();
+    }
 
     _conversationNode.addListener(() {
       setState(() {});
@@ -68,18 +79,24 @@ class _MainChatPageState extends State<MainThreadChatPage> {
         body: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                reverse: true,
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
-                  return ChatMessageWidget(
-                    isUser: message.role == "user",
-                    content: message.content ?? '',
-                    aiAgentThumbnail: message.assistant!.thumbnail,
-                  );
-                },
-              ),
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : ListView.builder(
+                      reverse: true,
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        final message = _messages[index];
+
+                        return ChatMessageWidget(
+                          isUser: message.role == "user",
+                          content: message.content ?? '',
+                          aiAgentThumbnail: message.assistant?.thumbnail ??
+                              'assets/icon/robot.png',
+                        );
+                      },
+                    ),
             ),
             const Divider(height: 1.0),
             Padding(
@@ -237,9 +254,36 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     setState(() {});
   }
 
+  Future<void> initHistory() async {
+    setState(() => isLoading = true);
+
+    try {
+      _messages = await AiChatServices.getConversationHistory(
+        context,
+        conversationId: widget.conversationId ?? '',
+        assistantId: 'gpt-4o',
+      );
+    } catch (e) {
+      log('Error loading history chat: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load chat history'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
   Future<void> _sendMessage(String? conversationId) async {
-    if (_chatController.text.trim().isEmpty || currentAiAgent.id.isEmpty)
+    if (_chatController.text.trim().isEmpty || currentAiAgent.id.isEmpty) {
       return;
+    }
 
     final userMessage = ChatMetaData(
       content: _chatController.text.trim(),
