@@ -1,6 +1,15 @@
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/new_prompt_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:final_project/services/prompt_service.dart'; // Import the PromptService
+import 'package:final_project/models/prompt_model.dart'; // Import the PromptModel
+
+// Define a list of prompts
+List<String> myPrompts = [
+  'What is your name?',
+  'How old are you?',
+  'Where do you live?'
+];
 
 class PromptLibrary extends StatefulWidget {
   const PromptLibrary({super.key});
@@ -9,31 +18,50 @@ class PromptLibrary extends StatefulWidget {
   _PromptLibraryState createState() => _PromptLibraryState();
 }
 
-class _PromptLibraryState extends State<PromptLibrary>
-    with SingleTickerProviderStateMixin {
+class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<String> myPrompts = ['11AA11', 'ABCD', 'LTP'];
-  final List<String> publicPrompts = [
-    'Grammar corrector',
-    'Learn Code FAST!',
-    'Story generator',
-    'Essay improver'
-  ];
-  final List<String> publicPromptDescriptions = [
-    'Improve your spelling and grammar by correcting errors in your writing.',
-    'Teach you the code with the most understandable knowledge.',
-    'Write your own beautiful story.',
-    'Improve your content\'s effectiveness with ease.'
-  ];
-
-  final List<String> categories = ['All', 'Marketing', 'Business', 'SEO'];
-  String selectedCategory = 'All';
+  List<PromptModel> publicPrompts = [];
+  List<PromptModel> filteredPrompts = [];
+  bool isLoading = true;
+  String searchQuery = '';
+  String selectedCategory = '';
+  List<String> categories = ['All', 'business', 'coding', 'writing', 'productivity', 'education', 'seo', 'marketing', 'ai_painting', 'career'];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    fetchPrompts();
+  }
+
+  Future<void> fetchPrompts() async {
+    try {
+      List<PromptModel> prompts = await PromptService().fetchPrompts(context);
+      setState(() {
+        publicPrompts = prompts;
+        filteredPrompts = prompts;
+        isLoading = false;
+      });
+    } catch (e) {
+      print(e);
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void filterPrompts() {
+    setState(() {
+      if (searchQuery.isEmpty && (selectedCategory == 'All' || selectedCategory.isEmpty)) {
+        filteredPrompts = publicPrompts;
+      } else {
+        filteredPrompts = publicPrompts.where((prompt) {
+          final matchesSearchQuery = prompt.title.toLowerCase().contains(searchQuery.toLowerCase()) || prompt.description.toLowerCase().contains(searchQuery.toLowerCase());
+          final matchesCategory = selectedCategory == 'All' || prompt.category == selectedCategory;
+          return matchesSearchQuery && matchesCategory;
+        }).toList();
+      }
+    });
   }
 
   @override
@@ -110,20 +138,29 @@ class _PromptLibraryState extends State<PromptLibrary>
   }
 
   Widget buildPublicPromptsList() {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: TextField(
+            child: TextField(
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
               hintText: 'Search...',
+              hintStyle: TextStyle(color: Colors.black), // Set hint text color to black
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onChanged: (value) {},
-          ),
+            style: TextStyle(color: Colors.black), // Set typed text color to black
+            onChanged: (value) {
+              searchQuery = value;
+              filterPrompts();
+            },
+            ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -139,6 +176,7 @@ class _PromptLibraryState extends State<PromptLibrary>
                     onSelected: (bool selected) {
                       setState(() {
                         selectedCategory = category;
+                        filterPrompts();
                       });
                     },
                   ),
@@ -149,12 +187,12 @@ class _PromptLibraryState extends State<PromptLibrary>
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: publicPrompts.length,
+            itemCount: filteredPrompts.length,
             itemBuilder: (context, index) {
+              PromptModel prompt = filteredPrompts[index];
               return ListTile(
-                title: Text(publicPrompts[index],
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(publicPromptDescriptions[index]),
+                title: Text(prompt.title, style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(prompt.description),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
