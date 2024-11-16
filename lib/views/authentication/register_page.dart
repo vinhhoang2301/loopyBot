@@ -10,6 +10,87 @@ import 'package:http/http.dart' as http;
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
+  void signUp(BuildContext context, String email, String username,
+      String password) async {
+    var headers = {'x-jarvis-guid': '', 'Content-Type': 'application/json'};
+    var request =
+        http.Request('POST', Uri.parse('$devServer/api/v1/auth/sign-up'));
+    request.body = json
+        .encode({"email": email, "password": password, "username": username});
+    request.headers.addAll(headers);
+    log(request.body.toString());
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
+              },
+              child: const Text('Continue'),
+            ),
+          ],
+          title: const Text('Success'),
+          content: const Text('Account registration successful'),
+          contentPadding: const EdgeInsets.all(20.0),
+        ),
+      );
+      log(await response.stream.bytesToString());
+    } else {
+      int statusCode = response.statusCode;
+      switch (statusCode) {
+        case 400:
+          log('Invalid email or password');
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+              title: const Text('Failed'),
+              content: const Text('Invalid email or password'),
+              contentPadding: const EdgeInsets.all(20.0),
+            ),
+          );
+          log(response.reasonPhrase.toString());
+          break;
+        case 422:
+          log('Email is already exist');
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+              title: const Text('Failed'),
+              content: const Text('Your email is already exist'),
+              contentPadding: const EdgeInsets.all(20.0),
+            ),
+          );
+          log(response.reasonPhrase.toString());
+
+          break;
+        default:
+          log(response.reasonPhrase.toString());
+          log(response.statusCode.toString());
+          break;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final TextEditingController usernameCtrl = TextEditingController();
@@ -71,33 +152,12 @@ class RegisterPage extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          // TODO: create function & check validate
-                          var headers = {
-                            'x-jarvis-guid': '',
-                            'Content-Type': 'application/json'
-                          };
-                          var request = http.Request('POST',
-                              Uri.parse('$devServer/api/v1/auth/sign-up'));
-                          request.body = json.encode({
-                            "email": emailCtrl.text.toString(),
-                            "password": passwordCtrl.text.toString(),
-                            "username": usernameCtrl.text.toString()
-                          });
-                          request.headers.addAll(headers);
-                          log(request.body.toString());
-                          http.StreamedResponse response = await request.send();
-
-                          if (response.statusCode == 200 ||
-                              response.statusCode == 201) {
-                            // TODO: Show success dialog and require login to continue
-                            Navigator.of(context)
-                                .pushReplacementNamed(AppRoutes.loginPage);
-                            log(await response.stream.bytesToString());
-                          } else {
-                            // TODO: Create error dialog
-                            log(response.reasonPhrase.toString());
-                            log(response.statusCode.toString());
-                          }
+                          signUp(
+                            context,
+                            emailCtrl.text,
+                            usernameCtrl.text,
+                            passwordCtrl.text,
+                          );
                         },
                         child: const Text('Register'),
                       ),
