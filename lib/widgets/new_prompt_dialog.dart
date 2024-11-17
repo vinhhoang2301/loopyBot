@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:final_project/services/prompt_service.dart';
+
 class NewPromptDialog extends StatefulWidget {
   @override
   _NewPromptDialogState createState() => _NewPromptDialogState();
@@ -65,7 +66,7 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
               ),
             ),
             TextFormField(
-              style: TextStyle(color: Colors.black), 
+              style: TextStyle(color: Colors.black),
               decoration: InputDecoration(labelText: 'Title'),
               onChanged: (value) {
                 setState(() {
@@ -74,13 +75,13 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a name';
+                  return 'Please enter a title';
                 }
                 return null;
               },
             ),
             TextFormField(
-              style: TextStyle(color: Colors.black), 
+              style: TextStyle(color: Colors.black),
               decoration: InputDecoration(labelText: 'Prompt'),
               onChanged: (value) {
                 setState(() {
@@ -95,8 +96,8 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
               },
             ),
             TextFormField(
-              style: TextStyle(color: Colors.black), 
-              decoration: InputDecoration(labelText: 'description'),
+              style: TextStyle(color: Colors.black),
+              decoration: InputDecoration(labelText: 'Description'),
               onChanged: (value) {
                 setState(() {
                   _description = value;
@@ -104,7 +105,7 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a prompt';
+                  return 'Please enter a description';
                 }
                 return null;
               },
@@ -115,18 +116,19 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(false);
           },
           child: Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              print('Name: $_title');
+              print('Title: $_title');
               print('Prompt: $_prompt');
-              print('Is Private: $_description');
-              PromptService().addPrivatePrompt(context, _title, _prompt, _description);
-              Navigator.of(context).pop();
+              print('Description: $_description');
+              PromptService().addPrivatePrompt(context, _title, _prompt, _description).then((_) {
+                Navigator.of(context).pop(true);
+              });
             }
           },
           child: Text('Create'),

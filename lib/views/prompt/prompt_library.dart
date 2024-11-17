@@ -79,7 +79,11 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       builder: (context) {
         return NewPromptDialog();
       },
-    );
+    ).then((value) {
+      if (value == true) {
+        fetchPrivatePrompts();
+      }
+    });
   }
   //3 widgets for prompt search 
   Widget buildSearchBar() {
@@ -208,6 +212,22 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
+                icon: Icon(
+                  prompt.isFavourite ? Icons.star : Icons.star_border,
+                  color: prompt.isFavourite ? Colors.yellow : null,
+                ),
+                onPressed: () async {
+                  setState(() {
+                    prompt.isFavourite = !prompt.isFavourite;
+                  });
+                  if (prompt.isFavourite) {
+                    await PromptService().addFavouritePrompt(context, prompt.id);
+                  } else {
+                    await PromptService().removeFavouritePrompt(context, prompt.id);
+                  }
+                },
+              ),
+              IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () {},
               ),
@@ -253,7 +273,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
                   if (prompt.isFavourite) {
                     await PromptService().addFavouritePrompt(context, prompt.id);
                   } else {
-                    // Add logic to remove from favorites if needed
+                    // delete favourite
                   }
                 },
               ),

@@ -60,9 +60,6 @@ class PromptService {
       Map<String, dynamic> jsonResponse = json.decode(responseBody);
       if (jsonResponse['items'] != null) {
         List<dynamic> promptsJson = jsonResponse['items'];
-        promptsJson.forEach((json) {
-          print('Title: ${json['title']}, IsFavourite: ${json['isFavorite']}');
-        });
         return promptsJson.map((json) => PromptModel.fromJson(json)).toList();
       } else {
         return [];
@@ -91,7 +88,9 @@ class PromptService {
       Map<String, dynamic> jsonResponse = json.decode(responseBody);
       if (jsonResponse['items'] != null) {
         List<dynamic> promptsJson = jsonResponse['items'];
-       
+        promptsJson.forEach((json) {
+          print('Title: ${json['title']}, IsFavourite: ${json['isFavorite']}');
+        });
         return promptsJson.map((json) => PromptModel.fromJson(json)).toList();
       } else {
         return [];
@@ -124,6 +123,31 @@ class PromptService {
       print('Response body: $responseBody');
     }
   }
+
+  Future<void> removeFavouritePrompt(BuildContext context, String promptId) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    var request = http.Request('DELETE', Uri.parse('$baseUrl/api/v1/prompts/$promptId/favorite'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      String responseBody = await response.stream.bytesToString();
+      print('Success: $responseBody');
+    } else {
+      String responseBody = await response.stream.bytesToString();
+      print('Failed to remove favorite prompt: ${response.statusCode} - ${response.reasonPhrase}');
+      print('Response body: $responseBody');
+    }
+  }
+
   Future<void> addPrivatePrompt(BuildContext context, String title, String prompt, String description) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
