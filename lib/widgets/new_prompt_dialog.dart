@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:final_project/services/prompt_service.dart';
 class NewPromptDialog extends StatefulWidget {
   @override
   _NewPromptDialogState createState() => _NewPromptDialogState();
@@ -7,7 +7,8 @@ class NewPromptDialog extends StatefulWidget {
 
 class _NewPromptDialogState extends State<NewPromptDialog> {
   final _formKey = GlobalKey<FormState>();
-  String _name = '';
+  String _description = '';
+  String _title = '';
   String _prompt = '';
   bool _isPrivate = true;
 
@@ -64,10 +65,11 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
               ),
             ),
             TextFormField(
-              decoration: InputDecoration(labelText: 'Name'),
+              style: TextStyle(color: Colors.black), 
+              decoration: InputDecoration(labelText: 'Title'),
               onChanged: (value) {
                 setState(() {
-                  _name = value;
+                  _title = value;
                 });
               },
               validator: (value) {
@@ -78,10 +80,26 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
               },
             ),
             TextFormField(
+              style: TextStyle(color: Colors.black), 
               decoration: InputDecoration(labelText: 'Prompt'),
               onChanged: (value) {
                 setState(() {
                   _prompt = value;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a prompt';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              style: TextStyle(color: Colors.black), 
+              decoration: InputDecoration(labelText: 'description'),
+              onChanged: (value) {
+                setState(() {
+                  _description = value;
                 });
               },
               validator: (value) {
@@ -104,10 +122,10 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              print('Name: $_name');
+              print('Name: $_title');
               print('Prompt: $_prompt');
-              print('Is Private: $_isPrivate');
-
+              print('Is Private: $_description');
+              PromptService().addPrivatePrompt(context, _title, _prompt, _description);
               Navigator.of(context).pop();
             }
           },

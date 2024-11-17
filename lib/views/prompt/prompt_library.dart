@@ -1,14 +1,8 @@
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/new_prompt_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:final_project/services/prompt_service.dart'; // Import the PromptService
-import 'package:final_project/models/prompt_model.dart'; // Import the PromptModel
-//Private prompts default
-List<String> myPrompts = [
-  'What is your name?',
-  'How old are you?',
-  'Where do you live?'
-];
+import 'package:final_project/services/prompt_service.dart'; 
+import 'package:final_project/models/prompt_model.dart'; 
 
 class PromptLibrary extends StatefulWidget {
   const PromptLibrary({super.key});
@@ -21,7 +15,9 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   late TabController _tabController;
   List<PromptModel> publicPrompts = [];
   List<PromptModel> filteredPrompts = [];
+  List<PromptModel> myPrompts = [];
   bool isLoading = true;
+  bool isFavourite = false;
   String searchQuery = '';
   PromptCategory selectedCategory = PromptCategory.all;
   List<PromptCategory> categories = PromptCategory.values;
@@ -31,15 +27,16 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     fetchPrompts();
+    fetchPrivatePrompts();
   }
 
-  Future<void> fetchPrompts({PromptCategory category = PromptCategory.all, String searchQuery = ''}) async {
+  Future<void> fetchPrompts({PromptCategory category = PromptCategory.all, String searchQuery = '', bool isFavourite = false}) async {
     setState(() {
       isLoading = true;
     });
 
     try {
-      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery);
+      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery, isFavourite: isFavourite);
       setState(() {
         publicPrompts = prompts;
         filteredPrompts = prompts;
@@ -53,10 +50,38 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     }
   }
 
-  void filterPrompts() {
-    fetchPrompts(category: selectedCategory, searchQuery: searchQuery);
+  Future<void> fetchPrivatePrompts() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      List<PromptModel> prompts = await PromptService().fetchPrivatePrompts(context);
+      setState(() {
+        myPrompts = prompts;
+        isLoading = false;
+      });
+    } catch (e) {
+      print(e);
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
+  void filterPrompts() {
+    fetchPrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
+  }
+
+  void addPrompt() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NewPromptDialog();
+      },
+    );
+  }
+  //3 widgets for prompt search 
   Widget buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -104,6 +129,22 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     );
   }
 
+  Widget buildFavouriteCheckbox() {
+    return ListTile(
+      title: Text('Favourites'),
+      trailing: Icon(
+        isFavourite ? Icons.star : Icons.star_border,
+        color: isFavourite ? Colors.yellow : null,
+      ),
+      onTap: () {
+        setState(() {
+          isFavourite = !isFavourite;
+          filterPrompts();
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,14 +156,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
         actions: [
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return NewPromptDialog();
-                },
-              );
-            },
+            onPressed: addPrompt,
             style: TextButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               shape: RoundedRectangleBorder(
@@ -143,6 +177,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
         children: [
           buildSearchBar(),
           buildCategorySelection(),
+          buildFavouriteCheckbox(),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -156,13 +191,19 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       ),
     );
   }
-
+  //2 widgets for private/public prompt list
   Widget buildMyPromptsList() {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return ListView.builder(
       itemCount: myPrompts.length,
       itemBuilder: (context, index) {
+        PromptModel prompt = myPrompts[index];
         return ListTile(
-          title: Text(myPrompts[index]),
+          title: Text(prompt.title, style: TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(prompt.description),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
