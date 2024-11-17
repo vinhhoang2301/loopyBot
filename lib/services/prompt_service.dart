@@ -67,4 +67,27 @@ class PromptService {
       throw Exception('Failed to fetch prompts: ${response.reasonPhrase}');
     }
   }
+
+  Future<void> addFavouritePrompt(BuildContext context, String promptId) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    var request = http.Request('POST', Uri.parse('$baseUrl/api/v1/prompts/$promptId/favorite'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      String responseBody = await response.stream.bytesToString();
+      print('Success: $responseBody');
+    } else {
+      String responseBody = await response.stream.bytesToString();
+      print(' response: ${response.statusCode} - ${response.reasonPhrase}');
+    }
+  }
 }

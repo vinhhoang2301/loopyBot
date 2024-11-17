@@ -32,7 +32,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     _tabController = TabController(length: 2, vsync: this);
     fetchPrompts();
   }
-  //Send API request to fetch prompts
+
   Future<void> fetchPrompts({PromptCategory category = PromptCategory.all, String searchQuery = ''}) async {
     setState(() {
       isLoading = true;
@@ -64,12 +64,12 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
         decoration: InputDecoration(
           prefixIcon: Icon(Icons.search),
           hintText: 'Search...',
-          hintStyle: TextStyle(color: Colors.black), // Set hint text color to black
+          hintStyle: TextStyle(color: Colors.black), 
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        style: TextStyle(color: Colors.black), // Set typed text color to black
+        style: TextStyle(color: Colors.black), 
         onChanged: (value) {
           searchQuery = value;
           filterPrompts();
@@ -201,8 +201,20 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(Icons.star_border),
-                onPressed: () {},
+                icon: Icon(
+                  prompt.isFavourite ? Icons.star : Icons.star_border,
+                  color: prompt.isFavourite ? Colors.yellow : null,
+                ),
+                onPressed: () async {
+                  setState(() {
+                    prompt.isFavourite = !prompt.isFavourite;
+                  });
+                  if (prompt.isFavourite) {
+                    await PromptService().addFavouritePrompt(context, prompt.id);
+                  } else {
+                    // Add logic to remove from favorites if needed
+                  }
+                },
               ),
               IconButton(
                 icon: Icon(Icons.info_outline),
