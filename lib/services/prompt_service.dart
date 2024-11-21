@@ -38,7 +38,7 @@ const Map<PromptCategory, String> promptCategoryLabels = {
 class PromptService {
   final String baseUrl = devServer; // Use devServer as the baseUrl
 
-  Future<List<PromptModel>> fetchPrompts(BuildContext context, {PromptCategory category = PromptCategory.all, String searchQuery = '', bool isFavourite = false}) async {
+  Future<List<PromptModel>> fetchPrompts(BuildContext context, {PromptCategory category = PromptCategory.all, String searchQuery = '', bool isFavourite = false, bool isPublic = true}) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
     var headers = {
@@ -49,7 +49,8 @@ class PromptService {
     String categoryQuery = category == PromptCategory.all ? '' : '&category=${category.toString().split('.').last}';
     String searchQueryParam = searchQuery.isEmpty ? '' : '&query=$searchQuery';
     String favouriteQuery = isFavourite ? '&isFavorite=true' : '';
-    var request = http.Request('GET', Uri.parse('$baseUrl/api/v1/prompts?offset=&limit=20&isPublic=true$categoryQuery$searchQueryParam$favouriteQuery'));
+    String publicQuery = isPublic ? '&isPublic=true' : '&isPublic=false';
+    var request = http.Request('GET', Uri.parse('$baseUrl/api/v1/prompts?offset=&limit=20$categoryQuery$searchQueryParam$favouriteQuery$publicQuery'));
 
     request.headers.addAll(headers);
 
@@ -69,37 +70,6 @@ class PromptService {
     }
   }
 
-  Future<List<PromptModel>> fetchPrivatePrompts(BuildContext context) async {
-    final accessToken = await AuthenticationService.getAccessToken(context);
-
-    var headers = {
-      'x-jarvis-guid': '',
-      'Authorization': 'Bearer $accessToken',
-    };
-
-    var request = http.Request('GET', Uri.parse('$baseUrl/api/v1/prompts?offset=&limit=20&isFavorite=false&isPublic=false'));
-
-    request.headers.addAll(headers);
-
-    http.StreamedResponse response = await request.send();
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      String responseBody = await response.stream.bytesToString();
-      Map<String, dynamic> jsonResponse = json.decode(responseBody);
-      if (jsonResponse['items'] != null) {
-        List<dynamic> promptsJson = jsonResponse['items'];
-        promptsJson.forEach((json) {
-          print('Title: ${json['title']}, IsFavourite: ${json['isFavorite']}');
-        });
-        return promptsJson.map((json) => PromptModel.fromJson(json)).toList();
-      } else {
-        return [];
-      }
-    } else {
-      throw Exception('Failed to fetch private prompts: ${response.reasonPhrase}');
-    }
-  }
-
   Future<void> addFavouritePrompt(BuildContext context, String promptId) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
@@ -116,7 +86,7 @@ class PromptService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       String responseBody = await response.stream.bytesToString();
-      print('Success: $responseBody');
+      print('Success add favourite: $responseBody');
     } else {
       String responseBody = await response.stream.bytesToString();
       print('Failed to add favorite prompt: ${response.statusCode} - ${response.reasonPhrase}');
@@ -140,7 +110,7 @@ class PromptService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       String responseBody = await response.stream.bytesToString();
-      print('Success: $responseBody');
+      print('Success REMOVE: $responseBody');
     } else {
       String responseBody = await response.stream.bytesToString();
       print('Failed to remove favorite prompt: ${response.statusCode} - ${response.reasonPhrase}');

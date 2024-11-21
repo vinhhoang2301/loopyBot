@@ -1,8 +1,8 @@
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/new_prompt_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:final_project/services/prompt_service.dart'; 
-import 'package:final_project/models/prompt_model.dart'; 
+import 'package:final_project/services/prompt_service.dart';
+import 'package:final_project/models/prompt_model.dart';
 
 class PromptLibrary extends StatefulWidget {
   const PromptLibrary({super.key});
@@ -16,6 +16,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   List<PromptModel> publicPrompts = [];
   List<PromptModel> filteredPrompts = [];
   List<PromptModel> myPrompts = [];
+  List<PromptModel> filteredMyPrompts = [];
   bool isLoading = true;
   bool isFavourite = false;
   String searchQuery = '';
@@ -36,7 +37,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     });
 
     try {
-      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery, isFavourite: isFavourite);
+      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery, isFavourite: isFavourite, isPublic: true);
       setState(() {
         publicPrompts = prompts;
         filteredPrompts = prompts;
@@ -50,15 +51,16 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     }
   }
 
-  Future<void> fetchPrivatePrompts() async {
+  Future<void> fetchPrivatePrompts({PromptCategory category = PromptCategory.all, String searchQuery = '', bool isFavourite = false}) async {
     setState(() {
       isLoading = true;
     });
 
     try {
-      List<PromptModel> prompts = await PromptService().fetchPrivatePrompts(context);
+      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery, isFavourite: isFavourite, isPublic: false);
       setState(() {
         myPrompts = prompts;
+        filteredMyPrompts = prompts;
         isLoading = false;
       });
     } catch (e) {
@@ -71,6 +73,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
 
   void filterPrompts() {
     fetchPrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
+    fetchPrivatePrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
   }
 
   void addPrompt() {
@@ -85,7 +88,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       }
     });
   }
-  //3 widgets for prompt search 
+
   Widget buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -93,12 +96,12 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
         decoration: InputDecoration(
           prefixIcon: Icon(Icons.search),
           hintText: 'Search...',
-          hintStyle: TextStyle(color: Colors.black), 
+          hintStyle: TextStyle(color: Colors.black),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        style: TextStyle(color: Colors.black), 
+        style: TextStyle(color: Colors.black),
         onChanged: (value) {
           searchQuery = value;
           filterPrompts();
@@ -195,16 +198,16 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       ),
     );
   }
-  //2 widgets for private/public prompt list
+
   Widget buildMyPromptsList() {
     if (isLoading) {
       return Center(child: CircularProgressIndicator());
     }
 
     return ListView.builder(
-      itemCount: myPrompts.length,
+      itemCount: filteredMyPrompts.length,
       itemBuilder: (context, index) {
-        PromptModel prompt = myPrompts[index];
+        PromptModel prompt = filteredMyPrompts[index];
         return ListTile(
           title: Text(prompt.title, style: TextStyle(fontWeight: FontWeight.bold)),
           subtitle: Text(prompt.description),
@@ -273,7 +276,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
                   if (prompt.isFavourite) {
                     await PromptService().addFavouritePrompt(context, prompt.id);
                   } else {
-                    // delete favourite
+                    await PromptService().removeFavouritePrompt(context, prompt.id);
                   }
                 },
               ),
