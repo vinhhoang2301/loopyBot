@@ -4,7 +4,9 @@ import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/models/ai_agent_model.dart';
 import 'package:final_project/models/chat_metadata.dart';
+import 'package:final_project/models/prompt_model.dart';
 import 'package:final_project/services/ai_chat_service.dart';
+import 'package:final_project/services/prompt_service.dart';
 import 'package:final_project/services/token_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chats/history_thread_chats.dart';
@@ -13,7 +15,7 @@ import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:final_project/views/prompt/prompt_library.dart';
 class MainThreadChatPage extends StatefulWidget {
   const MainThreadChatPage({
     super.key,
@@ -37,6 +39,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   late AiAgentModel currentAiAgent;
 
   List<ChatMetaData> _messages = [];
+  List<PromptModel> _promptHints = [];
   String? _conversationId;
   int availableTokens = 0;
   bool isLoading = false;
@@ -59,12 +62,64 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     _conversationNode.addListener(() {
       setState(() {});
     });
+
+    _chatController.addListener(_onChatTextChanged);
   }
 
   @override
   void dispose() {
     _conversationNode.dispose();
+    _chatController.dispose();
     super.dispose();
+  }
+
+  void _onChatTextChanged() {
+    final text = _chatController.text;
+    if (text.startsWith('/')) {
+      final query = text.substring(1);
+      if (query.isNotEmpty) {
+        _fetchPromptHints(query);
+      } else {
+        setState(() {
+          _promptHints.clear();
+        });
+      }
+    } else {
+      setState(() {
+        _promptHints.clear();
+      });
+    }
+  }
+
+  Future<void> _fetchPromptHints(String query) async {
+    try {
+      final prompts = await PromptService().fetchPromptsByPartialTitle(context, query);
+      setState(() {
+        _promptHints = prompts;
+      });
+    } catch (e) {
+      log('Error fetching prompt hints: $e');
+    }
+  }
+  Future<void> _navigateToPromptLibrary() async {
+    final selectedPrompt = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PromptLibrary(),
+      ),
+    );
+
+    if (selectedPrompt != null && selectedPrompt is String) {
+      setState(() {
+        _chatController.text += '\n' + selectedPrompt;
+      });
+    }
+  }
+  Future<void> _onPromptHintSelected(PromptModel prompt) async {
+    setState(() {
+      _chatController.text = prompt.content;
+      _promptHints.clear();
+    });
   }
 
   @override
@@ -75,31 +130,31 @@ class _MainChatPageState extends State<MainThreadChatPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Chat with AI',
-          ),
+          title: const Text('Chat with AI'),
           backgroundColor: AppColors.primaryColor,
           foregroundColor: AppColors.inverseTextColor,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.library_books),
+              onPressed: _navigateToPromptLibrary,
+            ),
+          ],
         ),
         drawer: const TabBarWidget(),
         body: Column(
           children: [
             Expanded(
               child: isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
+                  ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
                       reverse: true,
                       itemCount: _messages.length,
                       itemBuilder: (context, index) {
                         final message = _messages[index];
-
                         return ChatMessageWidget(
                           isUser: message.role == "user",
                           content: message.content ?? '',
-                          aiAgentThumbnail: message.assistant?.thumbnail ??
-                              'assets/icon/robot.png',
+                          aiAgentThumbnail: message.assistant?.thumbnail ?? 'assets/icon/robot.png',
                         );
                       },
                     ),
@@ -123,8 +178,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6.0, vertical: 4.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
                         decoration: BoxDecoration(
                           color: AppColors.secondaryColor,
                           borderRadius: BorderRadius.circular(16),
@@ -178,9 +232,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: _conversationNode.hasFocus
-                            ? AppColors.primaryColor
-                            : AppColors.backgroundColor2,
+                        color: _conversationNode.hasFocus ? AppColors.primaryColor : AppColors.backgroundColor2,
                         width: _conversationNode.hasFocus ? 2.0 : 1.0,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -204,37 +256,43 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                             ),
                           ),
                         ),
+                        if (_promptHints.isNotEmpty)
+                          Container(
+                            color: Colors.white,
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _promptHints.length,
+                              itemBuilder: (context, index) {
+                                final prompt = _promptHints[index];
+                                return ListTile(
+                                  title: Text(prompt.title),
+                                  onTap: () => _onPromptHintSelected(prompt),
+                                );
+                              },
+                            ),
+                          ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               children: [
                                 IconButton(
-                                  onPressed: () => Navigator.of(context)
-                                      .pushNamed(AppRoutes.promptPage),
-                                  icon: const Icon(
-                                      Icons.settings_suggest_outlined),
+                                  onPressed: () => Navigator.of(context).pushNamed(AppRoutes.promptPage),
+                                  icon: const Icon(Icons.settings_suggest_outlined),
                                 ),
+                                
                               ],
                             ),
                             Row(
                               children: [
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.image,
-                                    color: AppColors.primaryColor,
-                                  ),
+                                  icon: const Icon(Icons.image, color: AppColors.primaryColor),
                                   onPressed: () async {
-                                    // todo: allow upload image from camera
-                                    final XFile? pickedFile = await _picker
-                                        .pickImage(source: ImageSource.gallery);
+                                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
                                   },
                                 ),
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.send,
-                                    color: AppColors.primaryColor,
-                                  ),
+                                  icon: const Icon(Icons.send, color: AppColors.primaryColor),
                                   onPressed: () async {
                                     await _sendMessage(_conversationId);
                                   },

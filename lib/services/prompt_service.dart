@@ -209,4 +209,27 @@ class PromptService {
       print('Response body: $responseBody');
     }
   }
+
+  Future<List<PromptModel>> fetchPromptsByPartialTitle(BuildContext context, String partialTitle) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    var request = http.Request('GET', Uri.parse('$baseUrl/api/v1/prompts?query=$partialTitle'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      String responseBody = await response.stream.bytesToString();
+      List<dynamic> jsonResponse = json.decode(responseBody)['items'];
+      return jsonResponse.map((item) => PromptModel.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch prompts: ${response.reasonPhrase}');
+    }
+  }
 }

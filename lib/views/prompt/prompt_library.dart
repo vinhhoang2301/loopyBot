@@ -72,8 +72,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       });
     }
   }
- 
- 
+
   void filterPrompts() {
     fetchPrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
     fetchPrivatePrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
@@ -262,13 +261,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
               IconButton(
                 icon: Icon(Icons.arrow_forward),
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => MainThreadChatPage(
-                        initialPromptContent: prompt.content,
-                      ),
-                    ),
-                  );
+                  Navigator.of(context).pop(prompt.content);
                 },
               ),
             ],
@@ -316,13 +309,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
               IconButton(
                 icon: Icon(Icons.arrow_forward),
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => MainThreadChatPage(
-                        initialPromptContent: prompt.content,
-                      ),
-                    ),
-                  );
+                  Navigator.of(context).pop(prompt.content);
                 },
               ),
             ],
