@@ -1,5 +1,6 @@
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/new_prompt_dialog.dart';
+import 'package:final_project/widgets/update_prompt_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/services/prompt_service.dart';
 import 'package:final_project/models/prompt_model.dart';
@@ -70,7 +71,8 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       });
     }
   }
-
+ 
+ 
   void filterPrompts() {
     fetchPrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
     fetchPrivatePrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
@@ -86,6 +88,12 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       if (value == true) {
         fetchPrivatePrompts();
       }
+    });
+  }
+
+  void deletePrompt(String promptId) {
+    PromptService().deletePrivatePrompt(context, promptId).then((_) {
+      fetchPrivatePrompts();
     });
   }
 
@@ -232,11 +240,23 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
               ),
               IconButton(
                 icon: Icon(Icons.edit),
-                onPressed: () {},
+                onPressed: () async {
+                  bool? result = await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return EditPromptDialog(prompt: prompt);
+                    },
+                  );
+                  if (result == true) {
+                    fetchPrivatePrompts();
+                  }
+                },
               ),
               IconButton(
                 icon: Icon(Icons.delete),
-                onPressed: () {},
+                onPressed: () {
+                  deletePrompt(prompt.id);
+                },
               ),
               IconButton(
                 icon: Icon(Icons.arrow_forward),

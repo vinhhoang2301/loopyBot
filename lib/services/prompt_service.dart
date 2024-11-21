@@ -56,7 +56,7 @@ class PromptService {
 
     http.StreamedResponse response = await request.send();
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    if (response.statusCode == 200) {
       String responseBody = await response.stream.bytesToString();
       Map<String, dynamic> jsonResponse = json.decode(responseBody);
       if (jsonResponse['items'] != null) {
@@ -143,10 +143,69 @@ class PromptService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       String responseBody = await response.stream.bytesToString();
-      print('Success: $responseBody');
+      print('Success add: $responseBody');
     } else {
       String responseBody = await response.stream.bytesToString();
       print('Failed to add private prompt: ${response.statusCode} - ${response.reasonPhrase}');
+      print('Response body: $responseBody');
+    }
+  }
+
+  Future<void> deletePrivatePrompt(BuildContext context, String promptId) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    var request = http.Request('DELETE', Uri.parse('$baseUrl/api/v1/prompts/$promptId'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      String responseBody = await response.stream.bytesToString();
+      print('Success delete: $responseBody');
+    } else {
+      String responseBody = await response.stream.bytesToString();
+      print('Failed to delete private prompt: ${response.statusCode} - ${response.reasonPhrase}');
+      print('Response body: $responseBody');
+    }
+  }
+
+  Future<void> updatePrivatePrompt(BuildContext context, String promptId, String title, String content, String description) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken',
+      'Content-Type': 'application/json',
+    };
+
+    var body = json.encode({
+      'title': title,
+      'content': content,
+      'description': description,
+      'category': "other",
+      'language': "English",
+      'isPublic': false,
+    });
+
+    var request = http.Request('PATCH', Uri.parse('$baseUrl/api/v1/prompts/$promptId'));
+
+    request.headers.addAll(headers);
+    request.body = body;
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      String responseBody = await response.stream.bytesToString();
+      print('Success update: $responseBody');
+    } else {
+      String responseBody = await response.stream.bytesToString();
+      print('Failed to update prompt: ${response.statusCode} - ${response.reasonPhrase}');
       print('Response body: $responseBody');
     }
   }
