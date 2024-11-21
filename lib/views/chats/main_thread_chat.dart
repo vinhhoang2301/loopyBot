@@ -18,9 +18,11 @@ class MainThreadChatPage extends StatefulWidget {
   const MainThreadChatPage({
     super.key,
     this.conversationId,
+    this.initialPromptContent,
   });
 
   final String? conversationId;
+  final String? initialPromptContent;
 
   @override
   State<MainThreadChatPage> createState() => _MainChatPageState();
@@ -42,6 +44,10 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   @override
   void initState() {
     super.initState();
+
+    if (widget.initialPromptContent != null) {
+      _chatController.text = widget.initialPromptContent!;
+    }
 
     initChatTokens();
 

@@ -4,6 +4,7 @@ import 'package:final_project/widgets/update_prompt_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/services/prompt_service.dart';
 import 'package:final_project/models/prompt_model.dart';
+import 'package:final_project/views/chats/main_thread_chat.dart'; 
 
 class PromptLibrary extends StatefulWidget {
   const PromptLibrary({super.key});
@@ -260,7 +261,15 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
               ),
               IconButton(
                 icon: Icon(Icons.arrow_forward),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => MainThreadChatPage(
+                        initialPromptContent: prompt.content,
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -306,7 +315,15 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
               ),
               IconButton(
                 icon: Icon(Icons.arrow_forward),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => MainThreadChatPage(
+                        initialPromptContent: prompt.content,
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
