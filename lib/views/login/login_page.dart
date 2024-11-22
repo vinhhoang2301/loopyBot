@@ -46,6 +46,49 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
     } else {
+      int statusCode = response.statusCode;
+      switch (statusCode) {
+        case 400:
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Try again'),
+                ),
+              ],
+              title: const Text('Failed'),
+              content: const Text('Email must be an email'),
+              contentPadding: const EdgeInsets.all(20.0),
+            ),
+          );
+          break;
+
+        case 422:
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Try again'),
+                ),
+              ],
+              title: const Text('Failed'),
+              content: const Text('Email or password is invalid'),
+              contentPadding: const EdgeInsets.all(20.0),
+            ),
+          );
+          break;
+
+        default:
+          break;
+      }
       log(response.reasonPhrase.toString());
     }
   }
