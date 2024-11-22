@@ -19,7 +19,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final secureStorage = FlutterSecureStorage();
+  final secureStorage = const FlutterSecureStorage();
 
   // Sign In Method
   Future<void> signIn(
@@ -38,6 +38,8 @@ class _LoginPageState extends State<LoginPage> {
       final refreshToken = result['token']['refreshToken'];
       await secureStorage.write(key: 'refreshToken', value: refreshToken);
       log(refreshToken ?? 'null');
+
+      if (!context.mounted) return;
 
       await context.read<AuthProvider>().setTokens(
             accessToken: '',
@@ -103,9 +105,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void _initRefreshToken() async {
     String? refreshToken = await getRefreshToken();
-    log('Refresh Token: ' + refreshToken.toString());
+    log('Refresh Token: ${refreshToken.toString()}');
+
     if (refreshToken != null && refreshToken.isNotEmpty) {
-      //
       var headers = {'x-jarvis-guid': ''};
       var request = http.Request(
           'GET',
@@ -139,202 +141,161 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Text Controller
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+
     return Scaffold(
       backgroundColor: Colors.grey[300],
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(
-                height: 50.0,
-              ),
-
-              // App logo
-              const Icon(
-                Icons.chat,
-                size: 100,
-                color: AppColors.primaryColor,
-              ),
-
-              const SizedBox(
-                height: 10.0,
-              ),
-
-              // App name
-              const Text(
-                'Jarvis',
-                style: TextStyle(
-                  fontSize: 50.0,
-                  fontWeight: FontWeight.bold,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(height: 50.0),
+                const Icon(
+                  Icons.chat,
+                  size: 100,
                   color: AppColors.primaryColor,
                 ),
-              ),
-
-              const SizedBox(
-                height: 20.0,
-              ),
-
-              // Username textField
-              TextFieldItem(
-                controller: emailController,
-                hintText: 'Email',
-                obscureText: false,
-              ),
-
-              const SizedBox(
-                height: 20.0,
-              ),
-
-              // Password textField
-              TextFieldItem(
-                controller: passwordController,
-                hintText: 'Password',
-                obscureText: true,
-              ),
-
-              const SizedBox(
-                height: 10,
-              ),
-
-              // forgot password?
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 25.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Forgot Password?',
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(
-                height: 25.0,
-              ),
-
-              // login button
-              GestureDetector(
-                onTap: () => signIn(
-                  context,
-                  emailController.text,
-                  passwordController.text,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(25.0),
-                  margin: const EdgeInsets.symmetric(horizontal: 25.0),
-                  decoration: BoxDecoration(
+                const SizedBox(height: 10.0),
+                const Text(
+                  'Jarvis',
+                  style: TextStyle(
+                    fontSize: 50.0,
+                    fontWeight: FontWeight.bold,
                     color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Sign In',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.0,
-                      ),
-                    ),
                   ),
                 ),
-              ),
-
-              const SizedBox(
-                height: 25,
-              ),
-
-              // or continue with Google
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        thickness: 0.5,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        thickness: 0.5,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 20.0),
+                TextFieldItem(
+                  controller: emailController,
+                  hintText: 'Email',
+                  obscureText: false,
                 ),
-              ),
-
-              const SizedBox(
-                height: 25,
-              ),
-
-              // Google Sign In
-              GestureDetector(
-                onTap: signInWithGoogle,
-                child: Container(
-                  padding: const EdgeInsets.all(25.0),
-                  margin: const EdgeInsets.symmetric(horizontal: 25.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                const SizedBox(height: 20.0),
+                TextFieldItem(
+                  controller: passwordController,
+                  hintText: 'Password',
+                  obscureText: true,
+                ),
+                const SizedBox(height: 10),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Image(
-                        image: AssetImage('assets/icon/google.png'),
-                        height: 30,
-                      ),
-                      SizedBox(width: 15),
                       Text(
-                        'Join With Google',
+                        'Forgot Password?',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 25.0),
+                GestureDetector(
+                  onTap: () => signIn(
+                    context,
+                    emailController.text,
+                    passwordController.text,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(25.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 25.0),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Sign In',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16.0,
                         ),
                       ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 25),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          thickness: 0.5,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Text(
+                          'OR',
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          thickness: 0.5,
+                          color: Colors.grey[400],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ),
-
-              const SizedBox(
-                height: 30,
-              ),
-
-              // Not a member, register now
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Not a member?'),
-                  const SizedBox(
-                    width: 4,
-                  ),
-                  Text(
-                    'Register now',
-                    style: TextStyle(
-                      color: Colors.blue[500],
-                      fontWeight: FontWeight.bold,
+                const SizedBox(height: 25),
+                GestureDetector(
+                  onTap: signInWithGoogle,
+                  child: Container(
+                    padding: const EdgeInsets.all(25.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 25.0),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image(
+                          image: AssetImage('assets/icon/google.png'),
+                          height: 30,
+                        ),
+                        SizedBox(width: 15),
+                        Text(
+                          'Join With Google',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.0,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Not a member?'),
+                    const SizedBox(
+                      width: 4,
+                    ),
+                    Text(
+                      'Register now',
+                      style: TextStyle(
+                        color: Colors.blue[500],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
