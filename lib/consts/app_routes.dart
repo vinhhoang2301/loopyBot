@@ -10,4 +10,5 @@ class AppRoutes {
   static const String kbDetails = '/knowledge-base/details';
   static const String promptPage = '/prompt';
   static const String updateAccount = '/update-account';
+  static const String loginPage = '/authentication/login';
 }

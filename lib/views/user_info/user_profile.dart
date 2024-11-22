@@ -1,4 +1,9 @@
+import 'package:final_project/consts/api.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+import '../../consts/app_routes.dart';
 
 class UserProfile extends StatelessWidget {
   const UserProfile({super.key});
@@ -31,7 +36,9 @@ class UserProfile extends StatelessWidget {
                   child: const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Token Usage', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('Token Usage',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                       SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -70,7 +77,8 @@ class UserProfile extends StatelessWidget {
                           )),
                       const SizedBox(height: 8),
                       Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                         child: const ListTile(
                           leading: Icon(Icons.person, color: Colors.blue),
                           title: Text('Username'),
@@ -78,7 +86,8 @@ class UserProfile extends StatelessWidget {
                         ),
                       ),
                       Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                         child: const ListTile(
                           leading: Icon(Icons.person, color: Colors.blue),
                           title: Text('Email'),
@@ -92,7 +101,33 @@ class UserProfile extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomRight,
                   child: TextButton.icon(
-                    onPressed: () {},
+                    onPressed: () async {
+                      //
+                      FlutterSecureStorage secureStorage =
+                          FlutterSecureStorage();
+                      String? refreshToken =
+                          await secureStorage.read(key: 'refreshToken');
+                      var headers = {
+                        'x-jarvis-guid': '',
+                        'Authorization': 'Bearer $refreshToken'
+                      };
+                      var request = http.Request(
+                          'GET', Uri.parse('$devServer/api/v1/auth/sign-out'));
+
+                      request.headers.addAll(headers);
+
+                      http.StreamedResponse response = await request.send();
+
+                      if (response.statusCode == 200 ||
+                          response.statusCode == 201) {
+                        print(await response.stream.bytesToString());
+                        await secureStorage.delete(key: 'refreshToken');
+                        Navigator.of(context)
+                            .pushReplacementNamed(AppRoutes.loginPage);
+                      } else {
+                        print(response.reasonPhrase);
+                      }
+                    },
                     icon: const Icon(Icons.logout, color: Colors.red),
                     label: const Text(
                       'Log out',

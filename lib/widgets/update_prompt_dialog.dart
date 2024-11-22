@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:final_project/services/prompt_service.dart';
+import 'package:final_project/models/prompt_model.dart';
 
-class NewPromptDialog extends StatefulWidget {
+class EditPromptDialog extends StatefulWidget {
+  final PromptModel prompt;
+
+  EditPromptDialog({required this.prompt});
+
   @override
-  _NewPromptDialogState createState() => _NewPromptDialogState();
+  _EditPromptDialogState createState() => _EditPromptDialogState();
 }
 
-class _NewPromptDialogState extends State<NewPromptDialog> {
+class _EditPromptDialogState extends State<EditPromptDialog> {
   final _formKey = GlobalKey<FormState>();
-  String _description = '';
-  String _title = '';
-  String _prompt = '';
-  bool _isPrivate = true;
+  late String _title;
+  late String _content;
+  late String _description;
+
+  @override
+  void initState() {
+    super.initState();
+    _title = widget.prompt.title;
+    _content = widget.prompt.content;
+    _description = widget.prompt.description;
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text(
-        'New Prompt',
+        'Edit Prompt',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
       content: Form(
@@ -26,46 +38,8 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: EdgeInsets.all(6.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: ListTile(
-                      title: Text(
-                        'Private',
-                      ),
-                      leading: Radio(
-                        value: true,
-                        groupValue: _isPrivate,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _isPrivate = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListTile(
-                      title: Text(
-                        'Public',
-                      ),
-                      leading: Radio(
-                        value: false,
-                        groupValue: _isPrivate,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _isPrivate = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             TextFormField(
+              initialValue: _title,
               style: TextStyle(color: Colors.black),
               decoration: InputDecoration(labelText: 'Title'),
               onChanged: (value) {
@@ -81,21 +55,23 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
               },
             ),
             TextFormField(
+              initialValue: _content,
               style: TextStyle(color: Colors.black),
-              decoration: InputDecoration(labelText: 'Prompt'),
+              decoration: InputDecoration(labelText: 'Content'),
               onChanged: (value) {
                 setState(() {
-                  _prompt = value;
+                  _content = value;
                 });
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a prompt';
+                  return 'Please enter content';
                 }
                 return null;
               },
             ),
             TextFormField(
+              initialValue: _description,
               style: TextStyle(color: Colors.black),
               decoration: InputDecoration(labelText: 'Description'),
               onChanged: (value) {
@@ -123,15 +99,12 @@ class _NewPromptDialogState extends State<NewPromptDialog> {
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              print('Title: $_title');
-              print('Prompt: $_prompt');
-              print('Description: $_description');
-              PromptService().addPrivatePrompt(context, _title, _prompt, _description).then((_) {
+              PromptService().updatePrivatePrompt(context, widget.prompt.id, _title, _content, _description).then((_) {
                 Navigator.of(context).pop(true);
               });
             }
           },
-          child: Text('Create'),
+          child: Text('Save'),
         ),
       ],
     );
