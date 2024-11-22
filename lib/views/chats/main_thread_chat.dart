@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/models/ai_agent_model.dart';
@@ -16,6 +15,7 @@ import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
+
 class MainThreadChatPage extends StatefulWidget {
   const MainThreadChatPage({
     super.key,
@@ -93,7 +93,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
 
   Future<void> _fetchPromptHints(String query) async {
     try {
-      final prompts = await PromptService().fetchPromptsByPartialTitle(context, query);
+      final prompts =
+          await PromptService().fetchPromptsByPartialTitle(context, query);
       setState(() {
         _promptHints = prompts;
       });
@@ -101,6 +102,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
       log('Error fetching prompt hints: $e');
     }
   }
+
   Future<void> _navigateToPromptLibrary() async {
     final selectedPrompt = await Navigator.push(
       context,
@@ -115,6 +117,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
       });
     }
   }
+
   Future<void> _onPromptHintSelected(PromptModel prompt) async {
     setState(() {
       _chatController.text = prompt.content;
@@ -154,7 +157,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                         return ChatMessageWidget(
                           isUser: message.role == "user",
                           content: message.content ?? '',
-                          aiAgentThumbnail: message.assistant?.thumbnail ?? 'assets/icon/robot.png',
+                          aiAgentThumbnail: message.assistant?.thumbnail ??
+                              'assets/icon/robot.png',
                         );
                       },
                     ),
@@ -178,7 +182,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6.0, vertical: 4.0),
                         decoration: BoxDecoration(
                           color: AppColors.secondaryColor,
                           borderRadius: BorderRadius.circular(16),
@@ -232,76 +237,88 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: _conversationNode.hasFocus ? AppColors.primaryColor : AppColors.backgroundColor2,
+                        color: _conversationNode.hasFocus
+                            ? AppColors.primaryColor
+                            : AppColors.backgroundColor2,
                         width: _conversationNode.hasFocus ? 2.0 : 1.0,
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: TextField(
-                            controller: _chatController,
-                            focusNode: _conversationNode,
-                            minLines: 1,
-                            maxLines: 4,
-                            expands: false,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Ask me anything',
-                            ),
-                            style: const TextStyle(
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        if (_promptHints.isNotEmpty)
-                          Container(
-                            color: Colors.white,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: _promptHints.length,
-                              itemBuilder: (context, index) {
-                                final prompt = _promptHints[index];
-                                return ListTile(
-                                  title: Text(prompt.title),
-                                  onTap: () => _onPromptHintSelected(prompt),
-                                );
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: TextField(
+                              controller: _chatController,
+                              focusNode: _conversationNode,
+                              onChanged: (_) {
+                                _onChatTextChanged();
                               },
+                              minLines: 1,
+                              maxLines: 4,
+                              expands: false,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Ask me anything',
+                              ),
+                              style: const TextStyle(
+                                color: Colors.black,
+                              ),
                             ),
                           ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                IconButton(
-                                  onPressed: () => Navigator.of(context).pushNamed(AppRoutes.promptPage),
-                                  icon: const Icon(Icons.settings_suggest_outlined),
-                                ),
-                                
-                              ],
+                          if (_promptHints.isNotEmpty)
+                            SizedBox(
+                              height: 200,
+                              child: ListView.builder(
+                                itemCount: _promptHints.length,
+                                itemBuilder: (context, index) {
+                                  final prompt = _promptHints[index];
+                                  return ListTile(
+                                    title: Text(prompt.title),
+                                    onTap: () => _onPromptHintSelected(prompt),
+                                  );
+                                },
+                              ),
                             ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.image, color: AppColors.primaryColor),
-                                  onPressed: () async {
-                                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.send, color: AppColors.primaryColor),
-                                  onPressed: () async {
-                                    await _sendMessage(_conversationId);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () => Navigator.of(context)
+                                        .pushNamed(AppRoutes.promptPage),
+                                    icon: const Icon(
+                                        Icons.settings_suggest_outlined),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.image,
+                                        color: AppColors.primaryColor),
+                                    onPressed: () async {
+                                      final XFile? pickedFile =
+                                          await _picker.pickImage(
+                                              source: ImageSource.gallery);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.send,
+                                        color: AppColors.primaryColor),
+                                    onPressed: () async {
+                                      await _sendMessage(_conversationId);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
