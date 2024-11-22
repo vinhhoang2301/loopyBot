@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/providers/auth_provider.dart';

@@ -4,7 +4,6 @@ import 'package:final_project/widgets/update_prompt_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/services/prompt_service.dart';
 import 'package:final_project/models/prompt_model.dart';
-import 'package:final_project/views/chats/main_thread_chat.dart'; 
 
 class PromptLibrary extends StatefulWidget {
   const PromptLibrary({super.key});
@@ -102,14 +101,14 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       padding: const EdgeInsets.all(8.0),
       child: TextField(
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.search),
+          prefixIcon: const Icon(Icons.search),
           hintText: 'Search...',
-          hintStyle: TextStyle(color: Colors.black),
+          hintStyle: const TextStyle(color: Colors.black),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        style: TextStyle(color: Colors.black),
+        style: const TextStyle(color: Colors.black),
         onChanged: (value) {
           searchQuery = value;
           filterPrompts();
@@ -146,7 +145,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
 
   Widget buildFavouriteCheckbox() {
     return ListTile(
-      title: Text('Favourites'),
+      title: const Text('Favourites'),
       trailing: Icon(
         isFavourite ? Icons.star : Icons.star_border,
         color: isFavourite ? Colors.yellow : null,
@@ -164,13 +163,13 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Prompt Library',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: addPrompt,
             style: TextButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
@@ -183,8 +182,8 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: 'My Prompts'),
-            Tab(text: 'Public Prompts'),
+            const Tab(text: 'My Prompts'),
+            const Tab(text: 'Public Prompts'),
           ],
         ),
       ),
@@ -209,7 +208,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
 
   Widget buildMyPromptsList() {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     return ListView.builder(
@@ -217,7 +216,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       itemBuilder: (context, index) {
         PromptModel prompt = filteredMyPrompts[index];
         return ListTile(
-          title: Text(prompt.title, style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(prompt.title, style: const TextStyle(fontWeight: FontWeight.bold)),
           subtitle: Text(prompt.description),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -239,7 +238,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
                 },
               ),
               IconButton(
-                icon: Icon(Icons.edit),
+                icon: const Icon(Icons.edit),
                 onPressed: () async {
                   bool? result = await showDialog(
                     context: context,
@@ -253,13 +252,13 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
                 },
               ),
               IconButton(
-                icon: Icon(Icons.delete),
+                icon: const Icon(Icons.delete),
                 onPressed: () {
                   deletePrompt(prompt.id);
                 },
               ),
               IconButton(
-                icon: Icon(Icons.arrow_forward),
+                icon: const Icon(Icons.arrow_forward),
                 onPressed: () {
                   Navigator.of(context).pop(prompt.content);
                 },
@@ -273,7 +272,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
 
   Widget buildPublicPromptsList() {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     return ListView.builder(
@@ -281,7 +280,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       itemBuilder: (context, index) {
         PromptModel prompt = filteredPrompts[index];
         return ListTile(
-          title: Text(prompt.title, style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(prompt.title, style: const TextStyle(fontWeight: FontWeight.bold)),
           subtitle: Text(prompt.description),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -303,11 +302,11 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
                 },
               ),
               IconButton(
-                icon: Icon(Icons.info_outline),
+                icon: const Icon(Icons.info_outline),
                 onPressed: () {},
               ),
               IconButton(
-                icon: Icon(Icons.arrow_forward),
+                icon: const Icon(Icons.arrow_forward),
                 onPressed: () {
                   Navigator.of(context).pop(prompt.content);
                 },
