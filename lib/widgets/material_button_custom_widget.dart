@@ -7,13 +7,9 @@ class MaterialButtonCustomWidget extends StatelessWidget {
     required this.onPressed,
     this.title,
     this.padding = const EdgeInsets.all(0),
-    this.titleStyle = const TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.bold,
-      fontSize: 16.0,
-    ),
     this.buttonStyle,
     this.content,
+    this.isApproved = true,
   });
 
   final String? title;
@@ -21,11 +17,17 @@ class MaterialButtonCustomWidget extends StatelessWidget {
   final Function() onPressed;
 
   final EdgeInsets? padding;
-  final TextStyle? titleStyle;
   final BoxDecoration? buttonStyle;
+  final bool? isApproved;
 
   @override
   Widget build(BuildContext context) {
+    var titleStyle = TextStyle(
+      color: isApproved == true ? Colors.white : Colors.black,
+      fontWeight: FontWeight.bold,
+      fontSize: 16.0,
+    );
+
     return MaterialButton(
       onPressed: onPressed,
       padding: padding,
@@ -33,7 +35,9 @@ class MaterialButtonCustomWidget extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         decoration: buttonStyle ??
             BoxDecoration(
-              color: AppColors.primaryColor,
+              color: isApproved == true
+                  ? AppColors.primaryColor
+                  : AppColors.deniedColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
         child: Center(
