@@ -4,27 +4,35 @@ import 'package:flutter/material.dart';
 
 const aiAgentsList = [
   AiAgentModel(
-      id: 'claude-3-haiku-20240307',
-      name: 'Claude 3 Haiku',
-      thumbnail: 'assets/icon/claude_3_haiku.png'),
+    id: 'claude-3-haiku-20240307',
+    name: 'Claude 3 Haiku',
+    thumbnail: 'assets/icon/claude_3_haiku.png',
+  ),
   AiAgentModel(
-      id: 'claude-3-sonnet-20240229',
-      name: 'Claude 3 Sonnet',
-      thumbnail: 'assets/icon/claude_3_sonnet.png'),
+    id: 'claude-3-sonnet-20240229',
+    name: 'Claude 3 Sonnet',
+    thumbnail: 'assets/icon/claude_3_sonnet.png',
+  ),
   AiAgentModel(
-      id: 'gemini-1.5-flash-latest',
-      name: 'Gemini 1.5 Flash',
-      thumbnail: 'assets/icon/gemini_flash.png'),
+    id: 'gemini-1.5-flash-latest',
+    name: 'Gemini 1.5 Flash',
+    thumbnail: 'assets/icon/gemini_flash.png',
+  ),
   AiAgentModel(
-      id: 'gemini-1.5-pro-latest',
-      name: 'Gemini 1.5 Pro',
-      thumbnail: 'assets/icon/gemini_pro.png'),
+    id: 'gemini-1.5-pro-latest',
+    name: 'Gemini 1.5 Pro',
+    thumbnail: 'assets/icon/gemini_pro.png',
+  ),
   AiAgentModel(
-      id: 'gpt-4o', name: 'GPT-4o', thumbnail: 'assets/icon/gpt_4o.png'),
+    id: 'gpt-4o',
+    name: 'GPT-4o',
+    thumbnail: 'assets/icon/gpt_4o.png',
+  ),
   AiAgentModel(
-      id: 'gpt-4o-mini',
-      name: 'GPT-4o mini',
-      thumbnail: 'assets/icon/gpt_4o_mini.png'),
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o mini',
+    thumbnail: 'assets/icon/gpt_4o_mini.png',
+  ),
 ];
 
 class DropdownModelAI extends StatefulWidget {
@@ -39,7 +47,11 @@ class DropdownModelAI extends StatefulWidget {
 }
 
 class _DropdownModelAIState extends State<DropdownModelAI> {
-  AiAgentModel? _selectedValue;
+  AiAgentModel? _selectedValue = const AiAgentModel(
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o mini',
+    thumbnail: 'assets/icon/gpt_4o_mini.png',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +84,8 @@ class _DropdownModelAIState extends State<DropdownModelAI> {
             widget.onModelSelected!(newValue);
           }
         },
-        items: aiAgentsList.map<DropdownMenuItem<AiAgentModel>>((AiAgentModel value) {
+        items: aiAgentsList
+            .map<DropdownMenuItem<AiAgentModel>>((AiAgentModel value) {
           return DropdownMenuItem<AiAgentModel>(
             value: value,
             child: Row(
