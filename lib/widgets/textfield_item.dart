@@ -14,25 +14,22 @@ class TextFieldItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        style: const TextStyle(
-          color: Colors.black,
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      style: const TextStyle(
+        color: Colors.black,
+      ),
+      decoration: InputDecoration(
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
         ),
-        decoration: InputDecoration(
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.shade400),
-          ),
-          fillColor: Colors.grey.shade200,
-          filled: true,
-          hintText: hintText,
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
+        fillColor: Colors.grey.shade200,
+        filled: true,
+        hintText: hintText,
       ),
     );
   }

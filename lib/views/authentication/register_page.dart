@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:final_project/consts/api.dart';
+import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
@@ -9,6 +10,138 @@ import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final TextEditingController usernameCtrl = TextEditingController();
+    final TextEditingController emailCtrl = TextEditingController();
+    final TextEditingController passwordCtrl = TextEditingController();
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.inverseTextColor,
+        title: const Text('Jarvis Register'),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              const Text(
+                'Welcome to Jarvis!',
+                style: TextStyle(
+                  color: AppColors.primaryColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: usernameCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Username',
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        style: const TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                      TextFormField(
+                        controller: emailCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: Icon(Icons.email),
+                        ),
+                        style: const TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                      TextFormField(
+                        controller: passwordCtrl,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: Icon(Icons.lock),
+                        ),
+                        style: const TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      MaterialButtonCustomWidget(
+                        onPressed: () async {
+                          signUp(
+                            context,
+                            emailCtrl.text,
+                            usernameCtrl.text,
+                            passwordCtrl.text,
+                          );
+                        },
+                        title: 'Register',
+                      ),
+                      const SizedBox(height: 24),
+                      const Text('Or login with existing account:'),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: MaterialButtonCustomWidget(
+                              onPressed: () => Navigator.of(context)
+                                  .pushNamed(AppRoutes.loginGmail),
+                              content: Center(
+                                child: Row(
+                                  children: [
+                                    Image.asset(
+                                      'assets/icon/google_icon.png',
+                                      height: 24.0,
+                                      width: 24.0,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    const Text(
+                                      'Google',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: MaterialButtonCustomWidget(
+                              onPressed: () => Navigator.of(context)
+                                  .pushReplacementNamed(AppRoutes.loginPage),
+                              title: 'Jarvis',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Center(
+                child: Text('By continuing, you agree to our Privacy Policy'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void signUp(BuildContext context, String email, String username,
       String password) async {
@@ -89,120 +222,5 @@ class RegisterPage extends StatelessWidget {
           break;
       }
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final TextEditingController usernameCtrl = TextEditingController();
-    final TextEditingController emailCtrl = TextEditingController();
-    final TextEditingController passwordCtrl = TextEditingController();
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: AppColors.inverseTextColor,
-        title: const Text('Jarvis Register'),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              child: const Text('Welcome to Jarvis!'),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: usernameCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        prefixIcon: Icon(Icons.person),
-                      ),
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextFormField(
-                      controller: emailCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email),
-                      ),
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextFormField(
-                      controller: passwordCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: Icon(Icons.lock),
-                      ),
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          signUp(
-                            context,
-                            emailCtrl.text,
-                            usernameCtrl.text,
-                            passwordCtrl.text,
-                          );
-                        },
-                        child: const Text('Register'),
-                      ),
-                    ),
-                    const Text('Or login with existing account:'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushReplacementNamed(AppRoutes.loginGmail);
-                            },
-                            icon: Image.asset(
-                              'assets/icon/google_icon.png',
-                              height: 24.0,
-                              width: 24.0,
-                            ),
-                            label: const Text('Google'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushReplacementNamed(AppRoutes.homeChat);
-                            },
-                            label: const Text('Jarvis'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Center(
-              child: Text('By continuing, you agree to our Privacy Policy'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

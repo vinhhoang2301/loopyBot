@@ -5,7 +5,8 @@ import 'package:final_project/views/chatbot_ai/chatbot_ai_page.dart';
 import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:final_project/views/knowledge_base/kb_details_page.dart';
 import 'package:final_project/views/knowledge_base/kb_page.dart';
-import 'package:final_project/views/login/login_page.dart';
+import 'package:final_project/views/authentication/login_page.dart';
+import 'package:final_project/views/authentication/reset_password.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
 import 'package:final_project/views/user_info/update_account.dart';
 import 'package:final_project/views/user_info/user_profile.dart';
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.promptPage: (_) => const PromptLibrary(),
         AppRoutes.updateAccount: (_) => const UpdateAccount(),
         AppRoutes.loginPage: (_) => const LoginPage(),
+        AppRoutes.resetPassword: (_) => const ResetPassword(),
       },
     );
   }
