@@ -45,10 +45,9 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   const SizedBox(height: 50.0),
-                  const Icon(
-                    Icons.chat,
-                    size: 100,
-                    color: AppColors.primaryColor,
+                  Image.asset(
+                    'assets/icon/app_icon.png',
+                    height: 100,
                   ),
                   const SizedBox(height: 10.0),
                   const Text(
@@ -193,6 +192,8 @@ class _LoginPageState extends State<LoginPage> {
             accessToken: '',
             refreshToken: refreshToken,
           );
+
+      log('is authen: ${context.read<AuthProvider>().isAuthenticated}');
 
       Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
     } else {

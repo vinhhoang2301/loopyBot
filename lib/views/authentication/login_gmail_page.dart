@@ -1,7 +1,6 @@
 import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
-import 'package:final_project/consts/app_routes.dart';
 
 class LoginGmailPage extends StatelessWidget {
   const LoginGmailPage({super.key});

@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/providers/auth_provider.dart';
 import 'package:final_project/views/chatbot_ai/chatbot_ai_page.dart';
 import 'package:final_project/views/chats/main_thread_chat.dart';
+import 'package:final_project/views/home_page.dart';
 import 'package:final_project/views/knowledge_base/kb_details_page.dart';
 import 'package:final_project/views/knowledge_base/kb_page.dart';
 import 'package:final_project/views/authentication/login_page.dart';
@@ -15,13 +18,16 @@ import 'package:final_project/views/authentication/register_page.dart';
 import 'package:final_project/views/authentication/login_gmail_page.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final authProvider = AuthProvider();
+  await authProvider.initializeAuth();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => authProvider),
       ],
       child: const MyApp(),
     ),
@@ -33,6 +39,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log('is Authenticated: ${context.watch<AuthProvider>().isAuthenticated}');
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -43,10 +51,12 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: AppColors.defaultTextColor),
         ),
       ),
-      // Start with the RegisterPage
-      initialRoute: AppRoutes.loginPage,
+      initialRoute: context.watch<AuthProvider>().isAuthenticated
+          ? AppRoutes.loginPage
+          : AppRoutes.homePage,
       debugShowCheckedModeBanner: false,
       routes: {
+        AppRoutes.homePage: (_) => const HomePage(),
         AppRoutes.homeChat: (_) => const MainThreadChatPage(),
         AppRoutes.chatBotAI: (_) => const ChatbotAIPage(),
         AppRoutes.knowledgeBase: (_) => const KBPage(),
