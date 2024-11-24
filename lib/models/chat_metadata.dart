@@ -30,7 +30,7 @@ class ChatMetaData {
     if (assistant != null) {
       data['assistant'] = assistant!.toJson();
     }
-    data['isErrored'] = this.isErrored;
+    data['isErrored'] = isErrored;
 
     return data;
   }

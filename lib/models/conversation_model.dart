@@ -17,6 +17,7 @@ class ConversationModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    
     data['title'] = title;
     data['id'] = id;
     data['createdAt'] = createdAt;

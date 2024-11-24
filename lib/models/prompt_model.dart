@@ -6,7 +6,7 @@ class PromptModel {
   bool isPublic;
   String language;
   String title;
-  bool isFavourite;
+  bool isFavorite;
   Map<String, dynamic> additionalProperties;
 
   PromptModel({
@@ -17,7 +17,7 @@ class PromptModel {
     required this.isPublic,
     required this.language,
     required this.title,
-    this.isFavourite = false,
+    this.isFavorite = false,
     this.additionalProperties = const {},
   });
 
@@ -30,8 +30,8 @@ class PromptModel {
       isPublic: json['isPublic'] ?? false,
       language: json['language'] ?? '',
       title: json['title'] ?? '',
-      isFavourite: json['isFavourite'] ?? false,
-      additionalProperties: Map<String, dynamic>.from(json)..removeWhere((key, value) => ['_id', 'category', 'content', 'description', 'isPublic', 'language', 'title', 'isFavourite'].contains(key)),
+      isFavorite: json['isFavorite'] ?? false,
+      additionalProperties: Map<String, dynamic>.from(json)..removeWhere((key, value) => ['_id', 'category', 'content', 'description', 'isPublic', 'language', 'title', 'isFavorite'].contains(key)),
     );
   }
 
@@ -44,13 +44,13 @@ class PromptModel {
       'isPublic': isPublic,
       'language': language,
       'title': title,
-      'isFavourite': isFavourite,
+      'isFavorite': isFavorite,
       ...additionalProperties,
     };
   }
 
   @override
   String toString() {
-    return 'PromptModel{id: $id, category: $category, content: $content, description: $description, isPublic: $isPublic, language: $language, title: $title, isFavourite: $isFavourite, additionalProperties: $additionalProperties}';
+    return 'PromptModel{id: $id, category: $category, content: $content, description: $description, isPublic: $isPublic, language: $language, title: $title, isFavorite: $isFavorite, additionalProperties: $additionalProperties}';
   }
 }

@@ -27,6 +27,7 @@ class AiChatServices {
       'Authorization': 'Bearer $accessToken',
       'Content-Type': 'application/json'
     };
+    
     var request =
         http.Request('POST', Uri.parse('$devServer/api/v1/ai-chat/messages'));
 
@@ -70,11 +71,11 @@ class AiChatServices {
   }) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
-    var headers = {
-      'x-jarvis-guid': '',
-      'Authorization': 'Bearer $accessToken'
-    };
-    var request = http.Request('GET', Uri.parse('$devServer/api/v1/ai-chat/conversations?assistantId=$assistantId&assistantModel=$DIFY'));
+    var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+    var request = http.Request(
+        'GET',
+        Uri.parse(
+            '$devServer/api/v1/ai-chat/conversations?assistantId=$assistantId&assistantModel=$DIFY'));
 
     request.headers.addAll(headers);
 
@@ -92,15 +93,16 @@ class AiChatServices {
     return [];
   }
 
-  static Future<List<ChatMetaData>> getConversationHistory(BuildContext context, {required String conversationId, required String assistantId}) async {
+  static Future<List<ChatMetaData>> getConversationHistory(BuildContext context,
+      {required String conversationId, required String assistantId}) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
     List<ChatMetaData> chatMetaData = [];
 
-    var headers = {
-      'x-jarvis-guid': '',
-      'Authorization': 'Bearer $accessToken'
-    };
-    var request = http.Request('GET', Uri.parse('$devServer/api/v1/ai-chat/conversations/$conversationId/messages?assistantId=$assistantId&assistantModel=$DIFY'));
+    var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+    var request = http.Request(
+        'GET',
+        Uri.parse(
+            '$devServer/api/v1/ai-chat/conversations/$conversationId/messages?assistantId=$assistantId&assistantModel=$DIFY'));
 
     request.headers.addAll(headers);
 

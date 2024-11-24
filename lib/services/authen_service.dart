@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:developer';
 
@@ -10,27 +9,44 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 class AuthenticationService {
-  static Future<String> getAccessToken(BuildContext context) async {
-    final refreshToken = Provider.of<AuthProvider>(context, listen: false).refreshToken;
-    String accessToken = '';
+  static String? _cachedAccessToken;
+  static DateTime? _tokenExpiryTime;
 
-    var headers = {
-      'x-jarvis-guid': ''
-    };
-    var request = http.Request('GET', Uri.parse('$devServer/api/v1/auth/refresh?refreshToken=$refreshToken'));
+  static Future<String> getAccessToken(BuildContext context) async {
+    if (_cachedAccessToken != null && _tokenExpiryTime != null) {
+      if (DateTime.now().isBefore(_tokenExpiryTime!)) {
+        return _cachedAccessToken!;
+      }
+    }
+
+    final refreshToken =
+        Provider.of<AuthProvider>(context, listen: false).refreshToken;
+
+    var headers = {'x-jarvis-guid': ''};
+    var request = http.Request('GET',
+        Uri.parse('$devServer/api/v1/auth/refresh?refreshToken=$refreshToken'));
 
     request.headers.addAll(headers);
-
     http.StreamedResponse response = await request.send();
 
     final statusCode = response.statusCode;
+
     if (statusCode == 200 || statusCode == 201) {
       final result = jsonDecode(await response.stream.bytesToString());
 
-      accessToken = result[TOKEN][ACCESS_TOKEN];
-      log('access token=$accessToken');
+      _cachedAccessToken = result[TOKEN][ACCESS_TOKEN];
+      _tokenExpiryTime = DateTime.now().add(
+        const Duration(minutes: 1),
+      );
+      
+      log('access token=$_cachedAccessToken');
     }
 
-    return accessToken;
+    return _cachedAccessToken ?? '';
+  }
+
+  static void clearToken() {
+    _cachedAccessToken = null;
+    _tokenExpiryTime = null;
   }
 }
