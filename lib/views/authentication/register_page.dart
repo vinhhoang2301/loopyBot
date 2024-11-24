@@ -21,7 +21,7 @@ class RegisterPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.inverseTextColor,
-        title: const Text('Jarvis Register'),
+        title: const Text('LoopyBot Register'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -30,7 +30,7 @@ class RegisterPage extends StatelessWidget {
             children: [
               const SizedBox(height: 40),
               const Text(
-                'Welcome to Jarvis!',
+                'Welcome to LoopyBot!',
                 style: TextStyle(
                   color: AppColors.primaryColor,
                   fontSize: 24,
@@ -123,7 +123,7 @@ class RegisterPage extends StatelessWidget {
                             child: MaterialButtonCustomWidget(
                               onPressed: () => Navigator.of(context)
                                   .pushReplacementNamed(AppRoutes.loginPage),
-                              title: 'Jarvis',
+                              title: 'LoopyBot',
                             ),
                           ),
                         ],

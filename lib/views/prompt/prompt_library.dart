@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/new_prompt_dialog.dart';
 import 'package:final_project/widgets/update_prompt_dialog.dart';
@@ -12,14 +14,16 @@ class PromptLibrary extends StatefulWidget {
   _PromptLibraryState createState() => _PromptLibraryState();
 }
 
-class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProviderStateMixin {
+class _PromptLibraryState extends State<PromptLibrary>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
   List<PromptModel> publicPrompts = [];
   List<PromptModel> filteredPrompts = [];
   List<PromptModel> myPrompts = [];
   List<PromptModel> filteredMyPrompts = [];
   bool isLoading = true;
-  bool isFavourite = false;
+  bool isFavorite = false;
   String searchQuery = '';
   PromptCategory selectedCategory = PromptCategory.all;
   List<PromptCategory> categories = PromptCategory.values;
@@ -32,40 +36,64 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     fetchPrivatePrompts();
   }
 
-  Future<void> fetchPrompts({PromptCategory category = PromptCategory.all, String searchQuery = '', bool isFavourite = false}) async {
+  Future<void> fetchPrompts({
+    PromptCategory category = PromptCategory.all,
+    String searchQuery = '',
+    bool isFavorite = false,
+  }) async {
     setState(() {
       isLoading = true;
     });
 
     try {
-      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery, isFavourite: isFavourite, isPublic: true);
+      List<PromptModel> prompts = await PromptService().fetchPrompts(
+        context,
+        category: category,
+        searchQuery: searchQuery,
+        isFavorite: isFavorite,
+        isPublic: true,
+      );
+
       setState(() {
         publicPrompts = prompts;
         filteredPrompts = prompts;
         isLoading = false;
       });
     } catch (e) {
-      print(e);
+      log(e.toString());
+
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  Future<void> fetchPrivatePrompts({PromptCategory category = PromptCategory.all, String searchQuery = '', bool isFavourite = false}) async {
+  Future<void> fetchPrivatePrompts({
+    PromptCategory category = PromptCategory.all,
+    String searchQuery = '',
+    bool isFavorite = false,
+  }) async {
     setState(() {
       isLoading = true;
     });
 
     try {
-      List<PromptModel> prompts = await PromptService().fetchPrompts(context, category: category, searchQuery: searchQuery, isFavourite: isFavourite, isPublic: false);
+      List<PromptModel> prompts = await PromptService().fetchPrompts(
+        context,
+        category: category,
+        searchQuery: searchQuery,
+        isFavorite: isFavorite,
+        isPublic: false,
+      );
+
       setState(() {
         myPrompts = prompts;
         filteredMyPrompts = prompts;
         isLoading = false;
       });
     } catch (e) {
-      print(e);
+      log(e.toString());
+
       setState(() {
         isLoading = false;
       });
@@ -73,16 +101,23 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   }
 
   void filterPrompts() {
-    fetchPrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
-    fetchPrivatePrompts(category: selectedCategory, searchQuery: searchQuery, isFavourite: isFavourite);
+    fetchPrompts(
+      category: selectedCategory,
+      searchQuery: searchQuery,
+      isFavorite: isFavorite,
+    );
+
+    fetchPrivatePrompts(
+      category: selectedCategory,
+      searchQuery: searchQuery,
+      isFavorite: isFavorite,
+    );
   }
 
   void addPrompt() {
     showDialog(
       context: context,
-      builder: (context) {
-        return NewPromptDialog();
-      },
+      builder: (context) => NewPromptDialog(),
     ).then((value) {
       if (value == true) {
         fetchPrivatePrompts();
@@ -91,9 +126,9 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   }
 
   void deletePrompt(String promptId) {
-    PromptService().deletePrivatePrompt(context, promptId).then((_) {
-      fetchPrivatePrompts();
-    });
+    PromptService().deletePrivatePrompt(context, promptId).then(
+          (_) => fetchPrivatePrompts(),
+        );
   }
 
   Widget buildSearchBar() {
@@ -129,6 +164,7 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
               child: ChoiceChip(
                 label: Text(promptCategoryLabels[category]!),
                 selected: selectedCategory == category,
+                selectedColor: AppColors.secondaryColor,
                 onSelected: (bool selected) {
                   setState(() {
                     selectedCategory = category;
@@ -143,16 +179,16 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
     );
   }
 
-  Widget buildFavouriteCheckbox() {
+  Widget buildFavoriteCheckbox() {
     return ListTile(
-      title: const Text('Favourites'),
+      title: const Text('Favorites'),
       trailing: Icon(
-        isFavourite ? Icons.star : Icons.star_border,
-        color: isFavourite ? Colors.yellow : null,
+        isFavorite ? Icons.star : Icons.star_border,
+        color: isFavorite ? Colors.yellow : null,
       ),
       onTap: () {
         setState(() {
-          isFavourite = !isFavourite;
+          isFavorite = !isFavorite;
           filterPrompts();
         });
       },
@@ -163,27 +199,25 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Prompt Library',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Prompt Library'),
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.inverseTextColor,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: addPrompt,
-            style: TextButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: addPrompt,
             ),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
-            const Tab(text: 'My Prompts'),
-            const Tab(text: 'Public Prompts'),
+          labelColor: AppColors.inverseTextColor,
+          indicatorColor: AppColors.inverseTextColor,
+          tabs: const [
+            Tab(text: 'My Prompts'),
+            Tab(text: 'Public Prompts'),
           ],
         ),
       ),
@@ -191,7 +225,8 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
         children: [
           buildSearchBar(),
           buildCategorySelection(),
-          buildFavouriteCheckbox(),
+          buildFavoriteCheckbox(),
+
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -216,24 +251,29 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       itemBuilder: (context, index) {
         PromptModel prompt = filteredMyPrompts[index];
         return ListTile(
-          title: Text(prompt.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            prompt.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           subtitle: Text(prompt.description),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
                 icon: Icon(
-                  prompt.isFavourite ? Icons.star : Icons.star_border,
-                  color: prompt.isFavourite ? Colors.yellow : null,
+                  prompt.isFavorite ? Icons.star : Icons.star_border,
+                  color: prompt.isFavorite ? Colors.yellow : null,
                 ),
                 onPressed: () async {
                   setState(() {
-                    prompt.isFavourite = !prompt.isFavourite;
+                    prompt.isFavorite = !prompt.isFavorite;
                   });
-                  if (prompt.isFavourite) {
-                    await PromptService().addFavouritePrompt(context, prompt.id);
+                  if (prompt.isFavorite) {
+                    await PromptService().addFavoritePrompt(context, prompt.id);
                   } else {
-                    await PromptService().removeFavouritePrompt(context, prompt.id);
+                    await PromptService()
+                        .removeFavoritePrompt(context, prompt.id);
                   }
                 },
               ),
@@ -279,39 +319,54 @@ class _PromptLibraryState extends State<PromptLibrary> with SingleTickerProvider
       itemCount: filteredPrompts.length,
       itemBuilder: (context, index) {
         PromptModel prompt = filteredPrompts[index];
-        return ListTile(
-          title: Text(prompt.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(prompt.description),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(
-                  prompt.isFavourite ? Icons.star : Icons.star_border,
-                  color: prompt.isFavourite ? Colors.yellow : null,
+        
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              width: 0.5,
+              color: Colors.grey,
+            ),
+          ),
+          child: ListTile(
+            title: Text(
+              prompt.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(prompt.description),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    prompt.isFavorite ? Icons.star : Icons.star_border,
+                    color: prompt.isFavorite ? Colors.yellow : null,
+                  ),
+                  onPressed: () async {
+                    setState(() {
+                      prompt.isFavorite = !prompt.isFavorite;
+                    });
+                    if (prompt.isFavorite) {
+                      await PromptService().addFavoritePrompt(context, prompt.id);
+                    } else {
+                      await PromptService()
+                          .removeFavoritePrompt(context, prompt.id);
+                    }
+                  },
                 ),
-                onPressed: () async {
-                  setState(() {
-                    prompt.isFavourite = !prompt.isFavourite;
-                  });
-                  if (prompt.isFavourite) {
-                    await PromptService().addFavouritePrompt(context, prompt.id);
-                  } else {
-                    await PromptService().removeFavouritePrompt(context, prompt.id);
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.arrow_forward),
-                onPressed: () {
-                  Navigator.of(context).pop(prompt.content);
-                },
-              ),
-            ],
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: () {
+                    Navigator.of(context).pop(prompt.content);
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

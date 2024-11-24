@@ -1,4 +1,5 @@
 import 'package:final_project/consts/api.dart';
+import 'package:final_project/consts/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -13,13 +14,9 @@ class UserProfile extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Profile',
-            style: TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          title: const Text('Profile'),
+          backgroundColor: AppColors.primaryColor,
+          foregroundColor: AppColors.inverseTextColor,
         ),
         body: SingleChildScrollView(
           child: Padding(

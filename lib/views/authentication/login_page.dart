@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 10.0),
                   const Text(
-                    'Jarvis',
+                    'LoopyBot',
                     style: TextStyle(
                       fontSize: 50.0,
                       fontWeight: FontWeight.bold,

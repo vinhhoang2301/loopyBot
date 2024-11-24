@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'package:final_project/consts/app_color.dart';
-import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/models/ai_agent_model.dart';
 import 'package:final_project/models/chat_metadata.dart';
 import 'package:final_project/models/prompt_model.dart';
@@ -113,7 +112,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
 
     if (selectedPrompt != null && selectedPrompt is String) {
       setState(() {
-        _chatController.text += '\n' + selectedPrompt;
+        _chatController.text += '\n$selectedPrompt';
       });
     }
   }
@@ -177,7 +176,6 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                         child: DropdownModelAI(
                           onModelSelected: (AiAgentModel aiAgent) {
                             setState(() => currentAiAgent = aiAgent);
-                            log('Selected AI Model AI: ${currentAiAgent.id}');
                           },
                         ),
                       ),
@@ -283,37 +281,23 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                               ),
                             ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () => Navigator.of(context)
-                                        .pushNamed(AppRoutes.promptPage),
-                                    icon: const Icon(
-                                        Icons.settings_suggest_outlined),
-                                  ),
-                                ],
+                              IconButton(
+                                icon: const Icon(Icons.image,
+                                    color: AppColors.primaryColor),
+                                onPressed: () async {
+                                  final XFile? pickedFile =
+                                      await _picker.pickImage(
+                                          source: ImageSource.gallery);
+                                },
                               ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.image,
-                                        color: AppColors.primaryColor),
-                                    onPressed: () async {
-                                      final XFile? pickedFile =
-                                          await _picker.pickImage(
-                                              source: ImageSource.gallery);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.send,
-                                        color: AppColors.primaryColor),
-                                    onPressed: () async {
-                                      await _sendMessage(_conversationId);
-                                    },
-                                  ),
-                                ],
+                              IconButton(
+                                icon: const Icon(Icons.send,
+                                    color: AppColors.primaryColor),
+                                onPressed: () async {
+                                  await _sendMessage(_conversationId);
+                                },
                               ),
                             ],
                           ),
