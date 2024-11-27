@@ -22,6 +22,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final secureStorage = const FlutterSecureStorage();
 
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -89,6 +91,13 @@ class _LoginPageState extends State<LoginPage> {
                       passwordController.text,
                     ),
                     title: 'Sign In',
+                    content: isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.inverseTextColor,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 25),
                   Row(
@@ -171,6 +180,10 @@ class _LoginPageState extends State<LoginPage> {
   // Sign In Method
   Future<void> signIn(
       BuildContext context, String username, String password) async {
+    setState(() {
+      isLoading = true;
+    });
+
     var headers = {'x-jarvis-guid': '', 'Content-Type': 'application/json'};
     var request =
         http.Request('POST', Uri.parse('$devServer/api/v1/auth/sign-in'));
