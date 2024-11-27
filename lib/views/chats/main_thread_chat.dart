@@ -11,6 +11,7 @@ import 'package:final_project/views/chats/history_thread_chats.dart';
 import 'package:final_project/widgets/chat_message_widget.dart';
 import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
+import 'package:final_project/widgets/typing_indicator_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
@@ -42,6 +43,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   String? _conversationId;
   int availableTokens = 0;
   bool isLoading = false;
+  bool isTyping = false;
 
   @override
   void initState() {
@@ -63,6 +65,12 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     });
 
     _chatController.addListener(_onChatTextChanged);
+
+    currentAiAgent = const AiAgentModel(
+      id: 'gpt-4o-mini',
+      name: 'GPT-4o mini',
+      thumbnail: 'assets/icon/gpt_4o_mini.png',
+    );
   }
 
   @override
@@ -150,15 +158,28 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
                       reverse: true,
-                      itemCount: _messages.length,
+                      itemCount: _messages.length + (isTyping ? 1 : 0),
                       itemBuilder: (context, index) {
                         final message = _messages[index];
-                        return ChatMessageWidget(
-                          isUser: message.role == "user",
-                          content: message.content ?? '',
-                          aiAgentThumbnail: message.assistant?.thumbnail ??
-                              'assets/icon/robot.png',
-                        );
+                        final messageIndex = isTyping ? index - 1 : index;
+
+                        if (isTyping && index == 0) {
+                          return TypingIndicatorWidget(
+                            aiAgentThumbnail: message.assistant?.thumbnail,
+                          );
+                        }
+
+                        if (messageIndex >= 0 && messageIndex < _messages.length) {
+                          final message = _messages[messageIndex];
+                          return ChatMessageWidget(
+                            isUser: message.role == "user",
+                            content: message.content ?? '',
+                            aiAgentThumbnail: message.assistant?.thumbnail ??
+                                'assets/icon/robot.png',
+                          );
+                        }
+
+                        return const SizedBox.shrink(); 
                       },
                     ),
             ),
@@ -287,9 +308,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                 icon: const Icon(Icons.image,
                                     color: AppColors.primaryColor),
                                 onPressed: () async {
-                                  final XFile? pickedFile =
-                                      await _picker.pickImage(
-                                          source: ImageSource.gallery);
+                                  final XFile? pickedFile = await _picker
+                                      .pickImage(source: ImageSource.gallery);
                                 },
                               ),
                               IconButton(
@@ -359,30 +379,36 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     setState(() {
       _messages.insert(0, userMessage);
       _chatController.clear();
+      isTyping = true;
     });
 
-    final response = await AiChatServices.sendMessages(
-      context,
-      content: userMessage.content!,
-      aiAgent: currentAiAgent,
-      id: conversationId,
-      metaDataMessages: _messages,
-    );
+    try {
+      final response = await AiChatServices.sendMessages(
+        context,
+        content: userMessage.content!,
+        aiAgent: currentAiAgent,
+        id: conversationId,
+        metaDataMessages: _messages,
+      );
 
-    if (response != null) {
-      setState(() {
-        _messages.insert(
-          0,
-          ChatMetaData(
-            role: "model",
-            assistant: currentAiAgent,
-            content: response.message,
-          ),
-        );
+      if (response != null) {
+        setState(() {
+          isTyping = false;
+          _messages.insert(
+            0,
+            ChatMetaData(
+              role: "model",
+              assistant: currentAiAgent,
+              content: response.message,
+            ),
+          );
 
-        availableTokens = response.remainingUsage!;
-        _conversationId = response.conversationId!;
-      });
+          availableTokens = response.remainingUsage!;
+          _conversationId = response.conversationId!;
+        });
+      }
+    } catch (err) {
+      setState(() => isTyping = false);
     }
   }
 }
