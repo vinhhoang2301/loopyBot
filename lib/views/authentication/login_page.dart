@@ -255,6 +255,10 @@ class _LoginPageState extends State<LoginPage> {
       }
       log(response.reasonPhrase.toString());
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void signInWithGoogle() {}
