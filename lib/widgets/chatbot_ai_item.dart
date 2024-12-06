@@ -2,7 +2,14 @@ import 'package:final_project/consts/app_color.dart';
 import 'package:flutter/material.dart';
 
 class ChatbotAIItem extends StatelessWidget {
-  const ChatbotAIItem({super.key});
+  const ChatbotAIItem({
+    super.key,
+    required this.chatbotName,
+    required this.createdAt,
+  });
+
+  final String chatbotName;
+  final DateTime createdAt;
 
   @override
   Widget build(BuildContext context) {
@@ -19,24 +26,37 @@ class ChatbotAIItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Image.asset(
               'assets/unnamed.jpeg',
-              height: 80,
-              width: 80,
+              height: 64,
+              width: 64,
             ),
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              padding: const EdgeInsets.only(left: 8.0, top: 8.0),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'chatbot name',
-                        style: TextStyle(fontSize: 18),
+                      Flexible(
+                        child: Text(
+                          chatbotName,
+                          style: const TextStyle(fontSize: 16),
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: true,
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      const Icon(Icons.access_time_outlined),
+                      const SizedBox(width: 8),
+                      Text('${createdAt.month}/${createdAt.day}/${createdAt.year}'),
+                      const Spacer(),
                       Row(
                         children: [
                           IconButton(
@@ -49,14 +69,6 @@ class ChatbotAIItem extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Icon(Icons.access_time_outlined),
-                      SizedBox(width: 8),
-                      Text('15/11/2024'),
                     ],
                   ),
                 ],
