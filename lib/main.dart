@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/providers/auth_provider.dart';
+import 'package:final_project/providers/kb_auth_provider.dart';
 import 'package:final_project/views/chatbot_ai/chatbot_ai_page.dart';
 import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:final_project/views/home_page.dart';
@@ -28,6 +29,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => authProvider),
+        ChangeNotifierProvider(create: (_) => KBAuthProvider()),
       ],
       child: const MyApp(),
     ),
