@@ -9,6 +9,7 @@ import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/add_chatbot_ai_page.dart';
 import 'package:final_project/views/empty_page.dart';
 import 'package:final_project/widgets/chatbot_ai_item.dart';
+import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -66,7 +67,8 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -137,12 +139,14 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
     if (mounted) {
-      await KBAuthService.signInFromExternalClient(context, accessToken: accessToken);
+      await KBAuthService.signInFromExternalClient(context,
+          accessToken: accessToken);
     }
   }
 
   Future<void> fetchAiAssistant() async {
-    final assistants = await AiAssistantService.getAllAssistants(context: context);
+    final assistants =
+        await AiAssistantService.getAllAssistants(context: context);
 
     aiAssistants = assistants;
     filteredAssistants = assistants;
@@ -178,6 +182,67 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
     }
   }
 
+  Future<void> deleteAssistant(BuildContext context,
+      {required String id}) async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content:
+              const Text('Are you sure you want to delete this AI Assistant?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !context.mounted) return;
+
+    final result = await AiAssistantService.deleteAssistant(
+      context: context,
+      id: id,
+    );
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(result ? 'Success' : 'Failed'),
+          content: Text(result
+              ? 'AI Assistant deleted successfully'
+              : 'Failed to delete AI Assistant. Please try again.'),
+          actions: [
+            MaterialButtonCustomWidget(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                if (result) {
+                  setState(() => isLoading = true);
+                  await fetchAiAssistant();
+                  setState(() => isLoading = false);
+                }
+              },
+              title: 'Close',
+            )
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildContent() {
     if (isLoading) {
       return const Center(
@@ -200,10 +265,20 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
 
         DateTime createdAt = DateTime.parse(chatbotItem.createdAt.toString());
 
-        return ChatbotAIItem(
-          chatbotName: chatbotItem.assistantName ?? 'null',
-          createdAt: createdAt,
-        );
+        return chatbotItem.id != null
+            ? ChatbotAIItem(
+                id: chatbotItem.id!,
+                chatbotName: chatbotItem.assistantName!,
+                createdAt: createdAt,
+                delete: () => deleteAssistant(context, id: chatbotItem.id!),
+              )
+            : const SizedBox(
+                height: 40,
+                child: Text(
+                  'Failed to get Assistant',
+                  style: TextStyle(color: Colors.red),
+                ),
+              );
       },
     );
   }
