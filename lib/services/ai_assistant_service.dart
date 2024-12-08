@@ -149,4 +149,43 @@ class AiAssistantService {
       return null;
     }
   }
+
+  static Future<bool> updateAssistant({
+    required BuildContext context,
+    required String id,
+    required String assistantName,
+    String? assistantDes,
+    String? assistantIns,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json'
+      };
+      var request = http.Request(
+          'PATCH', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+      request.body = json.encode({
+        "assistantName": assistantName,
+        "instructions": assistantIns,
+        "description": assistantDes
+      });
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = await response.stream.bytesToString();
+
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      log('Error when Updating Assistant: ${err.toString()}');
+      return false;
+    }
+  }
 }
