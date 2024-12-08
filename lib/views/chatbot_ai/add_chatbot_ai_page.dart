@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
+import 'package:final_project/widgets/text_input_widget.dart';
 import 'package:flutter/material.dart';
 
 class AddChatbotAIPage extends StatefulWidget {
@@ -73,7 +74,7 @@ class _AddChatbotAIPageState extends State<AddChatbotAIPage> {
             ),
           ),
           const SizedBox(height: 8),
-          _CustomTextField(
+          CustomTextField(
             controller: chatbotNameCtrl,
             hintText: 'Chatbot AI 001',
           ),
@@ -86,7 +87,7 @@ class _AddChatbotAIPageState extends State<AddChatbotAIPage> {
             ),
           ),
           const SizedBox(height: 8),
-          _CustomTextField(
+          CustomTextField(
             controller: chatbotDesCtrl,
             hintText: 'Enter your description',
           ),
@@ -99,7 +100,7 @@ class _AddChatbotAIPageState extends State<AddChatbotAIPage> {
             ),
           ),
           const SizedBox(height: 8),
-          _CustomTextField(
+          CustomTextField(
             controller: chatbotInsCtrl,
             hintText: 'Enter your instructions',
           ),
@@ -110,21 +111,29 @@ class _AddChatbotAIPageState extends State<AddChatbotAIPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                          Navigator.of(context).pop();
+                        },
                   child: const Text('Cancel'),
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
-                  onPressed: createAiAssistant,
+                  onPressed: isLoading ? null : createAiAssistant,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[800],
                     foregroundColor: Colors.white,
                   ),
                   child: isLoading
-                      ? const CircularProgressIndicator(
-                          color: AppColors.inverseTextColor,
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
                         )
                       : const Text('Create'),
                 ),
@@ -155,27 +164,18 @@ class _AddChatbotAIPageState extends State<AddChatbotAIPage> {
       chatbotDesCtrl.clear();
       chatbotInsCtrl.clear();
 
-       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text(result != null ? 'Success' : 'Failed'),
-              content: Text(result != null
-                  ? 'Create AI Assistant Successfully'
-                  : 'Create AI Assistant Failed'),
-              actions: [
-                MaterialButtonCustomWidget(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop(true);
-                  },
-                  title: 'Close',
-                )
-              ],
-            );
-          },
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result != null
+                  ? 'AI Assistant created successfully!'
+                  : 'AI Assistant created failed',
+            ),
+            backgroundColor: result != null ? Colors.green : Colors.red,
+          ),
         );
+        Navigator.pop(context, true);
       }
     } catch (err) {
       log('Error when submitting create Chatbot AI: ${err.toString()}');
@@ -184,35 +184,5 @@ class _AddChatbotAIPageState extends State<AddChatbotAIPage> {
         setState(() => isLoading = false);
       }
     }
-  }
-}
-
-class _CustomTextField extends StatelessWidget {
-  const _CustomTextField({
-    required this.controller,
-    this.hintText = '',
-  });
-
-  final TextEditingController controller;
-  final String? hintText;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(
-        color: AppColors.defaultTextColor,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          fontSize: 14,
-          color: AppColors.defaultTextColor.withOpacity(0.3),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
   }
 }
