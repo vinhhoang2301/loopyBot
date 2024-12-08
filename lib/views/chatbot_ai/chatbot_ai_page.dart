@@ -118,12 +118,18 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Utils.showBottomSheet(
+          onPressed: () async {
+            final result = await Utils.showBottomSheet(
               context,
               sheet: const AddChatbotAIPage(),
               showFullScreen: true,
             );
+
+            if (result == true && mounted) {
+              setState(() => isLoading = true);
+              await fetchAiAssistant();
+              setState(() => isLoading = false);
+            }
           },
           tooltip: 'Add Chatbot AI',
           backgroundColor: AppColors.primaryColor,

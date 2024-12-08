@@ -5,12 +5,12 @@ class Utils {
 
   final BuildContext context;
 
-  static void showBottomSheet(
+  static Future<T?> showBottomSheet<T>(
     BuildContext context, {
     required Widget sheet,
     bool showFullScreen = false,
   }) {
-    showModalBottomSheet(
+    return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: showFullScreen,
       backgroundColor: Colors.white,

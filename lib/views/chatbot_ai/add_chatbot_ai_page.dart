@@ -168,6 +168,7 @@ class _AddChatbotAIPageState extends State<AddChatbotAIPage> {
                 MaterialButtonCustomWidget(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    Navigator.of(context).pop(true);
                   },
                   title: 'Close',
                 )
