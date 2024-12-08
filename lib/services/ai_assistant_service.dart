@@ -17,14 +17,9 @@ class AiAssistantService {
     final accessToken = await KBAuthService.getKbAccessToken(context);
 
     try {
-      var headers = {
-        'x-jarvis-guid': '',
-        'Authorization': 'Bearer $accessToken'
-      };
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
       var request = http.Request(
-          'GET',
-          Uri.parse(
-              '$kbAPIUrl/kb-core/v1/ai-assistant?q&order=DESC&order_field=createdAt&offset&limit=20&is_favorite&is_published'));
+          'GET', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant?q&order=DESC&order_field=createdAt&offset&limit=20&is_favorite&is_published'));
       request.headers.addAll(headers);
 
       http.StreamedResponse response = await request.send();
@@ -32,9 +27,7 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final result = jsonDecode(await response.stream.bytesToString());
 
-        return (result['data'] as List<dynamic>)
-            .map((item) => AiAssistantModel.fromJson(item))
-            .toList();
+        return (result['data'] as List<dynamic>).map((item) => AiAssistantModel.fromJson(item)).toList();
       } else {
         log('error: ${response.statusCode}');
         return null;
@@ -58,18 +51,9 @@ class AiAssistantService {
     final accessToken = await KBAuthService.getKbAccessToken(context);
 
     try {
-      var headers = {
-        'x-jarvis-guid': '',
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json'
-      };
-      var request =
-          http.Request('POST', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant'));
-      request.body = json.encode({
-        "assistantName": assistantName,
-        "instructions": instructions,
-        "description": description
-      });
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json'};
+      var request = http.Request('POST', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant'));
+      request.body = json.encode({"assistantName": assistantName, "instructions": instructions, "description": description});
       request.headers.addAll(headers);
 
       http.StreamedResponse response = await request.send();
@@ -95,12 +79,8 @@ class AiAssistantService {
     final accessToken = await KBAuthService.getKbAccessToken(context);
 
     try {
-      var headers = {
-        'x-jarvis-guid': '',
-        'Authorization': 'Bearer $accessToken'
-      };
-      var request = http.Request(
-          'DELETE', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+      var request = http.Request('DELETE', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
 
       request.headers.addAll(headers);
 
@@ -125,12 +105,8 @@ class AiAssistantService {
     final accessToken = await KBAuthService.getKbAccessToken(context);
 
     try {
-      var headers = {
-        'x-jarvis-guid': '',
-        'Authorization': 'Bearer $accessToken'
-      };
-      var request = http.Request(
-          'GET', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+      var request = http.Request('GET', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
 
       request.headers.addAll(headers);
 
@@ -160,17 +136,70 @@ class AiAssistantService {
     final accessToken = await KBAuthService.getKbAccessToken(context);
 
     try {
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json'};
+      var request = http.Request('PATCH', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+      request.body = json.encode({"assistantName": assistantName, "instructions": assistantIns, "description": assistantDes});
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      log('Error when Updating Assistant: ${err.toString()}');
+      return false;
+    }
+  }
+
+  static Future<String?> askAssistant({
+    required BuildContext context,
+    required String assistantId,
+    required String msg,
+    required String openAiThreadId,
+    String additionalIns = '',
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json'};
+      var request = http.Request('POST', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$assistantId/ask'));
+      request.body = json.encode({"message": msg, "openAiThreadId": openAiThreadId, "additionalInstruction": additionalIns});
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = await response.stream.bytesToString();
+        return result;
+      } else {
+        log('failed');
+        return null;
+      }
+    } catch (err) {
+      log('Error when Asking Assistant: ${err.toString()}');
+      return null;
+    }
+  }
+
+  static Future<AiAssistantModel?> updateWithNewThreadPlayGround({
+    required BuildContext context,
+    required String assistantId,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
       var headers = {
         'x-jarvis-guid': '',
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json'
       };
-      var request = http.Request(
-          'PATCH', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+      var request = http.Request('POST', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/thread/playground'));
       request.body = json.encode({
-        "assistantName": assistantName,
-        "instructions": assistantIns,
-        "description": assistantDes
+        "assistantId": assistantId,
+        "firstMessage": ""
       });
       request.headers.addAll(headers);
 
@@ -179,13 +208,13 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final result = await response.stream.bytesToString();
 
-        return true;
+        return AiAssistantModel.fromJson(jsonDecode(result));
       } else {
-        return false;
+        return null;
       }
-    } catch (err) {
-      log('Error when Updating Assistant: ${err.toString()}');
-      return false;
+    }catch (err) {
+      log('Error when Updating Assistant with New Thread: ${err.toString()}');
+      return null;
     }
   }
 }
