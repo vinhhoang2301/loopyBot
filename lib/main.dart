@@ -5,6 +5,7 @@ import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/providers/auth_provider.dart';
 import 'package:final_project/providers/kb_auth_provider.dart';
 import 'package:final_project/views/chatbot_ai/chatbot_ai_page.dart';
+import 'package:final_project/views/chatbot_ai/preview_chatbot_ai_page.dart';
 import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:final_project/views/home_page.dart';
 import 'package:final_project/views/knowledge_base/kb_details_page.dart';
@@ -57,6 +58,17 @@ class MyApp extends StatelessWidget {
           ? AppRoutes.loginPage
           : AppRoutes.homePage,
       debugShowCheckedModeBanner: false,
+      onGenerateRoute: (settings) {
+        if (settings.name?.startsWith('${AppRoutes.assistantDetails}/') ??
+            false) {
+          final id = settings.name?.split('/').last;
+          return MaterialPageRoute(
+            builder: (context) => PreviewChatbot(id: id ?? ''),
+            settings: settings,
+          );
+        }
+        return null;
+      },
       routes: {
         AppRoutes.homePage: (_) => const HomePage(),
         AppRoutes.homeChat: (_) => const MainThreadChatPage(),
@@ -65,7 +77,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.register: (_) => const RegisterPage(),
         AppRoutes.loginGmail: (_) => const LoginGmailPage(),
         AppRoutes.userProfile: (_) => const UserProfile(),
-        AppRoutes.kbDetails: (_) => const KbDetailsPage(),
+        AppRoutes.assistantDetails: (_) => const PreviewChatbot(id: ''),
         AppRoutes.promptPage: (_) => const PromptLibrary(),
         AppRoutes.updateAccount: (_) => const UpdateAccount(),
         AppRoutes.loginPage: (_) => const LoginPage(),

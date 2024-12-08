@@ -19,7 +19,7 @@ class ChatbotAIItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).pushNamed(AppRoutes.assistantDetails),
+      onTap: () => Navigator.of(context).pushNamed('${AppRoutes.assistantDetails}/$id'),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
         padding: const EdgeInsets.all(8.0),

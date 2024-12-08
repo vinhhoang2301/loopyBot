@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/key.dart';
 import 'package:final_project/models/ai_assistant_model.dart';
-import 'package:final_project/providers/kb_auth_provider.dart';
 import 'package:final_project/services/kb_authen_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -100,8 +99,8 @@ class AiAssistantService {
         'x-jarvis-guid': '',
         'Authorization': 'Bearer $accessToken'
       };
-      var request =
-          http.Request('DELETE', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+      var request = http.Request(
+          'DELETE', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
 
       request.headers.addAll(headers);
 
@@ -116,6 +115,38 @@ class AiAssistantService {
     } catch (err) {
       log('Error when Deleting Assistant: ${err.toString()}');
       return false;
+    }
+  }
+
+  static Future<AiAssistantModel?> getAssistant({
+    required BuildContext context,
+    required String id,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken'
+      };
+      var request = http.Request(
+          'GET', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('Success when Getting Assistant');
+        final result = await response.stream.bytesToString();
+
+        return AiAssistantModel.fromJson(jsonDecode(result));
+      } else {
+        return null;
+      }
+    } catch (err) {
+      log('Error when Deleting Assistant: ${err.toString()}');
+      return null;
     }
   }
 }

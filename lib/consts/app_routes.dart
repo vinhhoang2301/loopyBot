@@ -8,6 +8,7 @@ class AppRoutes {
 
   static const String userProfile = '/profile';
   static const String kbDetails = '/knowledge-base/details';
+  static const String assistantDetails = 'chatbot-ai/details';
   static const String promptPage = '/prompt';
   static const String updateAccount = '/update-account';
 
