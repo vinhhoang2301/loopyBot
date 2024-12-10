@@ -16,5 +16,5 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 https://api.dev.jarvis.cx
-phat3@gmail.com
+vinh3@gmail.com
 2wyML3agdX695ae

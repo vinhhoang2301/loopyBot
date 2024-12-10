@@ -310,6 +310,9 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                 onPressed: () async {
                                   final XFile? pickedFile = await _picker
                                       .pickImage(source: ImageSource.gallery);
+                                  if (pickedFile != null) {
+                                    await _sendMessage(_conversationId, pickedFile);
+                                  }
                                 },
                               ),
                               IconButton(
@@ -365,20 +368,31 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     }
   }
 
-  Future<void> _sendMessage(String? conversationId) async {
-    if (_chatController.text.trim().isEmpty || currentAiAgent.id.isEmpty) {
+  Future<void> _sendMessage(String? conversationId, [XFile? pickedFile]) async {
+    if ((pickedFile == null && _chatController.text.trim().isEmpty) || currentAiAgent.id.isEmpty) {
       return;
     }
 
-    final userMessage = ChatMetaData(
-      content: _chatController.text.trim(),
-      assistant: currentAiAgent,
-      role: "user",
-    );
+    ChatMetaData userMessage;
+    if (pickedFile != null) {
+      userMessage = ChatMetaData(
+        content: 'Image: ${pickedFile.path}',
+        assistant: currentAiAgent,
+        role: "user",
+      );
+    } else {
+      userMessage = ChatMetaData(
+        content: _chatController.text.trim(),
+        assistant: currentAiAgent,
+        role: "user",
+      );
+    }
 
     setState(() {
       _messages.insert(0, userMessage);
-      _chatController.clear();
+      if (pickedFile == null) {
+        _chatController.clear();
+      }
       isTyping = true;
     });
 
@@ -390,7 +404,6 @@ class _MainChatPageState extends State<MainThreadChatPage> {
         id: conversationId,
         metaDataMessages: _messages,
       );
-
       if (response != null) {
         setState(() {
           isTyping = false;
@@ -402,7 +415,6 @@ class _MainChatPageState extends State<MainThreadChatPage> {
               content: response.message,
             ),
           );
-
           availableTokens = response.remainingUsage!;
           _conversationId = response.conversationId!;
         });
