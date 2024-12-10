@@ -5,6 +5,9 @@ import 'package:final_project/widgets/kb_item.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
 
+import '../../services/authen_service.dart';
+import '../../services/kb_authen_service.dart';
+
 class KBPage extends StatefulWidget {
   const KBPage({super.key});
 
@@ -19,6 +22,7 @@ class _KBPage extends State<KBPage> {
   @override
   void initState() {
     super.initState();
+    _initializeData();
     _searchFocusNode.addListener(() {
       setState(() {});
     });
@@ -29,6 +33,19 @@ class _KBPage extends State<KBPage> {
     _searchController.dispose();
     _searchFocusNode.unfocus();
     super.dispose();
+  }
+
+  Future<void> signIn() async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    if (mounted) {
+      await KBAuthService.signInFromExternalClient(context,
+          accessToken: accessToken);
+    }
+  }
+
+  Future<void> _initializeData() async {
+    await signIn();
   }
 
   @override
@@ -47,7 +64,8 @@ class _KBPage extends State<KBPage> {
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
