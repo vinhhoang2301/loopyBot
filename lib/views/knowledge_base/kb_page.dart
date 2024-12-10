@@ -1,5 +1,10 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/models/kb_model.dart';
+import 'package:final_project/services/kb_service.dart';
 import 'package:final_project/utils/global_methods.dart';
+import 'package:final_project/views/empty_page.dart';
 import 'package:final_project/views/knowledge_base/add_kb_page.dart';
 import 'package:final_project/widgets/kb_item.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
@@ -19,10 +24,15 @@ class _KBPage extends State<KBPage> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
+  List<KbModel>? allKnowledge = [];
+  List<KbModel>? filteredKnowledge = [];
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
     _initializeData();
+
     _searchFocusNode.addListener(() {
       setState(() {});
     });
@@ -44,8 +54,26 @@ class _KBPage extends State<KBPage> {
     }
   }
 
+  Future<void> fetchAllKnowledge() async {
+    final allKnowledgeBase = await KbService.getAllKnowledge(context: context);
+
+    allKnowledge = allKnowledgeBase;
+    filteredKnowledge = allKnowledgeBase;
+  }
+
   Future<void> _initializeData() async {
-    await signIn();
+    try {
+      setState(() => isLoading = true);
+
+      await signIn();
+      await fetchAllKnowledge();
+    } catch (err) {
+      log('Error when Initialize Data in KB');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -87,20 +115,7 @@ class _KBPage extends State<KBPage> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: ListView(
-                children: const <Widget>[
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                ],
-              ),
+              child: _buildContent(),
             ),
           ],
         ),
@@ -119,6 +134,43 @@ class _KBPage extends State<KBPage> {
           child: const Icon(Icons.add),
         ),
       ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.defaultTextColor,
+        ),
+      );
+    }
+
+    if (filteredKnowledge == null || filteredKnowledge!.isEmpty) {
+      return const EmptyPage(content: 'No Knowledge Base. Let Create It');
+    }
+
+    return ListView.builder(
+      itemCount: filteredKnowledge!.length,
+      itemBuilder: (context, index) {
+        final kbItem = filteredKnowledge![index];
+
+        DateTime createdAt = DateTime.parse(kbItem.createdAt.toString());
+        return kbItem.userId != null
+            ? KBItem(
+                userId: kbItem.userId!,
+                createdAt: createdAt,
+                kbName: kbItem.knowledgeName!,
+                delete: () {},
+              )
+            : const SizedBox(
+                height: 40,
+                child: Text(
+                  'Failed to get KB',
+                  style: TextStyle(color: Colors.red),
+                ),
+              );
+      },
     );
   }
 }

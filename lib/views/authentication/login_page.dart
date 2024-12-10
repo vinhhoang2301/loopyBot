@@ -4,6 +4,7 @@ import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/key.dart';
 import 'package:final_project/providers/auth_provider.dart';
+import 'package:final_project/providers/google_signin_api.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:final_project/widgets/textfield_item.dart';
 import 'package:flutter/material.dart';
@@ -261,7 +262,11 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void signInWithGoogle() {}
+  Future signInWithGoogle() async {
+    final result = await GoogleSignInApi.login();
+    final auth = await result?.authentication;
+    log(auth!.idToken ?? 'null');
+  }
 
   void _initRefreshToken() async {
     String? refreshToken = await getRefreshToken();
