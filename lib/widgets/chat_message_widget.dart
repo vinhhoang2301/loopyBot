@@ -27,7 +27,7 @@ class ChatMessageWidget extends StatelessWidget {
                 const _Avatar(imagePath: 'assets/icon/user.png'),
               ]
             : [
-                _Avatar(imagePath: aiAgentThumbnail!),
+                _Avatar(imagePath: aiAgentThumbnail ?? 'assets/icon/chatbot.png'),
                 const SizedBox(width: 4),
                 _MessageBubble(content: content),
               ],
