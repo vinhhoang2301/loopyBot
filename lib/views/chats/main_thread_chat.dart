@@ -15,6 +15,7 @@ import 'package:final_project/widgets/typing_indicator_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
+import 'package:camera/camera.dart';
 
 class MainThreadChatPage extends StatefulWidget {
   const MainThreadChatPage({
@@ -44,6 +45,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   int availableTokens = 0;
   bool isLoading = false;
   bool isTyping = false;
+  CameraController? _cameraController;
+  XFile? _imageFile;
 
   @override
   void initState() {
@@ -77,6 +80,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   void dispose() {
     _conversationNode.dispose();
     _chatController.dispose();
+    _cameraController?.dispose();
     super.dispose();
   }
 
@@ -130,6 +134,42 @@ class _MainChatPageState extends State<MainThreadChatPage> {
       _chatController.text = prompt.content;
       _promptHints.clear();
     });
+  }
+
+  Future<void> _initializeCamera() async {
+  try {
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
+
+    _cameraController = CameraController(
+      firstCamera,
+      ResolutionPreset.high,
+    );
+
+    await _cameraController?.initialize();
+  } catch (e) {
+    print('Error initializing camera: $e');
+  }
+}
+
+  Future<void> _takePicture() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
+
+    if (_cameraController!.value.isTakingPicture) {
+      return;
+    }
+
+    try {
+      final image = await _cameraController!.takePicture();
+      setState(() {
+        _imageFile = image;
+      });
+      await _sendMessage(_conversationId, _imageFile);
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -313,6 +353,14 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                   if (pickedFile != null) {
                                     await _sendMessage(_conversationId, pickedFile);
                                   }
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.camera_alt,
+                                    color: AppColors.primaryColor),
+                                onPressed: () async {
+                                  await _initializeCamera();
+                                  await _takePicture();
                                 },
                               ),
                               IconButton(
