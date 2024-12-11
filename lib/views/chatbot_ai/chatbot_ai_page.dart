@@ -8,6 +8,7 @@ import 'package:final_project/services/kb_authen_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/add_chatbot_ai_page.dart';
 import 'package:final_project/views/empty_page.dart';
+import 'package:final_project/views/error_page.dart';
 import 'package:final_project/widgets/chatbot_ai_item.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
@@ -21,8 +22,6 @@ class ChatbotAIPage extends StatefulWidget {
 }
 
 class _ChatbotAIPage extends State<ChatbotAIPage> {
-  String? _selectedValue;
-  final List<String> _items = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
@@ -69,47 +68,26 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  TextField(
-                    controller: _searchController,
-                    style: const TextStyle(
-                      color: AppColors.defaultTextColor,
-                    ),
-                    focusNode: _searchFocusNode,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppColors.primaryColor,
-                          width: 2.0,
-                        ),
-                      ),
-                      hintText: 'Search your Chatbot',
-                      suffixIcon: const Icon(Icons.search),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(
+                  color: AppColors.defaultTextColor,
+                ),
+                focusNode: _searchFocusNode,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppColors.primaryColor,
+                      width: 2.0,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  DropdownButton<String>(
-                    value: _selectedValue,
-                    hint: const Text('Select an item'),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedValue = newValue;
-                      });
-                    },
-                    items: _items.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ],
+                  hintText: 'Search your Chatbot',
+                  suffixIcon: const Icon(Icons.search),
+                ),
               ),
             ),
             Expanded(
@@ -258,10 +236,16 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
       );
     }
 
-    log('filtered assistants = $filteredAssistants');
+    if (aiAssistants == null) {
+      return const ErrorPage(content: 'Something went wrong. Please try again');
+    }
 
-    if (filteredAssistants == null || filteredAssistants!.isEmpty) {
+    if (aiAssistants!.isEmpty) {
       return const EmptyPage(content: 'No AI Assistant. Let Create It');
+    }
+
+    if (filteredAssistants!.isEmpty) {
+      return const EmptyPage(content: 'No AI Assistant Match');
     }
 
     return ListView.builder(
