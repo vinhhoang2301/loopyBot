@@ -34,6 +34,7 @@ class _KBPage extends State<KBPage> {
     super.initState();
     _initializeData();
 
+    _searchController.addListener(_onSearchChanged);
     _searchFocusNode.addListener(() {
       setState(() {});
     });
@@ -41,6 +42,7 @@ class _KBPage extends State<KBPage> {
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _searchFocusNode.unfocus();
     super.dispose();
@@ -112,6 +114,9 @@ class _KBPage extends State<KBPage> {
                   hintText: 'Search your Knowledge Base',
                   suffixIcon: const Icon(Icons.search),
                 ),
+                style: const TextStyle(
+                  color: Colors.black,
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -173,6 +178,21 @@ class _KBPage extends State<KBPage> {
               );
       },
     );
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
+
+    setState(() {
+      if (query.isEmpty) {
+        filteredKnowledge = allKnowledge;
+      } else {
+        filteredKnowledge = allKnowledge?.where((knowledge) {
+          final name = knowledge.knowledgeName?.toLowerCase() ?? '';
+          return name.contains(query);
+        }).toList();
+      }
+    });
   }
 
   Future<void> deleteKnowledge(BuildContext context,
