@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 class KBItem extends StatelessWidget {
   const KBItem({
     super.key,
-    required this.userId,
+    required this.id,
     required this.kbName,
     required this.createdAt,
     required this.delete,
   });
 
-  final String userId;
+  final String id;
   final String kbName;
   final DateTime createdAt;
   final void Function() delete;

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/authen_service.dart';
 import '../../services/kb_authen_service.dart';
+import '../../widgets/material_button_custom_widget.dart';
 
 class KBPage extends StatefulWidget {
   const KBPage({super.key});
@@ -156,12 +157,12 @@ class _KBPage extends State<KBPage> {
         final kbItem = filteredKnowledge![index];
 
         DateTime createdAt = DateTime.parse(kbItem.createdAt.toString());
-        return kbItem.userId != null
+        return kbItem.kbId != null
             ? KBItem(
-                userId: kbItem.userId!,
                 createdAt: createdAt,
                 kbName: kbItem.knowledgeName!,
-                delete: () {},
+                id: kbItem.kbId!,
+                delete: () => deleteKnowledge(context, id: kbItem.kbId!),
               )
             : const SizedBox(
                 height: 40,
@@ -170,6 +171,67 @@ class _KBPage extends State<KBPage> {
                   style: TextStyle(color: Colors.red),
                 ),
               );
+      },
+    );
+  }
+
+  Future<void> deleteKnowledge(BuildContext context,
+      {required String id}) async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text(
+              'Are you sure you want to delete this Knowledge Base?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !context.mounted) return;
+
+    final result = await KbService.deleteKnowledge(
+      context: context,
+      id: id,
+    );
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(result ? 'Success' : 'Failed'),
+          content: Text(result
+              ? 'Knowledge Base deleted successfully'
+              : 'Failed to delete Knowledge Base. Please try again.'),
+          actions: [
+            MaterialButtonCustomWidget(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                if (result) {
+                  setState(() => isLoading = true);
+                  await fetchAllKnowledge();
+                  setState(() => isLoading = false);
+                }
+              },
+              title: 'Close',
+            )
+          ],
+        );
       },
     );
   }

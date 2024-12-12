@@ -84,4 +84,35 @@ class KbService {
       return null;
     }
   }
+
+  static Future<bool> deleteKnowledge({
+    required BuildContext context,
+    required String id,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken'
+      };
+      var request = http.Request(
+          'DELETE', Uri.parse('$kbAPIUrl/kb-core/v1/knowledge/$id'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('result of deleting kb: true');
+        return true;
+      } else {
+        log('result of deleting kb: false');
+        return false;
+      }
+    } catch (err) {
+      log('Error in Delete KB: ${err.toString()}');
+      return false;
+    }
+  }
 }
