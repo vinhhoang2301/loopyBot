@@ -72,6 +72,7 @@ class KBAuthService {
       http.StreamedResponse response = await request.send();
 
       final statusCode = response.statusCode;
+      log('Refresh Token: ' + refreshToken!);
 
       if (statusCode == 200 || statusCode == 201) {
         final result = jsonDecode(await response.stream.bytesToString());

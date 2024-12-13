@@ -6,6 +6,7 @@ class KbModel {
   String? userId;
   String? knowledgeName;
   String? description;
+  String? kbId;
 
   KbModel(
       {this.createdAt,
@@ -14,7 +15,8 @@ class KbModel {
       this.updatedBy,
       this.userId,
       this.knowledgeName,
-      this.description});
+      this.description,
+      this.kbId});
 
   KbModel.fromJson(Map<String, dynamic> json) {
     createdAt = json['createdAt'];
@@ -24,6 +26,7 @@ class KbModel {
     userId = json['userId'];
     knowledgeName = json['knowledgeName'];
     description = json['description'];
+    kbId = json['id'];
   }
 
   Map<String, dynamic> toJson() {
@@ -35,6 +38,7 @@ class KbModel {
     data['userId'] = this.userId;
     data['knowledgeName'] = this.knowledgeName;
     data['description'] = this.description;
+    data['id'] = this.kbId;
     return data;
   }
 }

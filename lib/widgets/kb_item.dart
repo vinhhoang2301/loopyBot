@@ -3,7 +3,18 @@ import 'package:final_project/consts/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class KBItem extends StatelessWidget {
-  const KBItem({super.key});
+  const KBItem({
+    super.key,
+    required this.id,
+    required this.kbName,
+    required this.createdAt,
+    required this.delete,
+  });
+
+  final String id;
+  final String kbName;
+  final DateTime createdAt;
+  final void Function() delete;
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +45,8 @@ class KBItem extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'chatbot name',
+                        Text(
+                          kbName,
                           style: TextStyle(fontSize: 18),
                         ),
                         Row(
@@ -46,18 +57,19 @@ class KBItem extends StatelessWidget {
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete_outlined),
-                              onPressed: () {},
+                              onPressed: () {
+                                delete.call();
+                              },
                             ),
                           ],
                         ),
                       ],
                     ),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('10 units'),
-                        Text('78.00 Bytes'),
-                        Text('15/11/2024'),
+                        Text(
+                            '${createdAt.month}/${createdAt.day}/${createdAt.year}'),
                       ],
                     ),
                   ],
