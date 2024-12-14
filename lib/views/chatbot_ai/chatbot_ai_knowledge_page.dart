@@ -23,18 +23,21 @@ class ChatbotKnowledgePage extends StatefulWidget {
 }
 
 class _AddKBPage extends State<ChatbotKnowledgePage> {
+  late final String assistantId;
+
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
 
   List<KbModel>? importedKnowledge = [];
   List<KbModel>? filteredKnowledge = [];
-
+  Map<String, bool> loadingStates = {};
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
 
+    assistantId = widget.id;
     fetchImportedKnowledge();
 
     _searchFocusNode.addListener(() {
@@ -65,7 +68,8 @@ class _AddKBPage extends State<ChatbotKnowledgePage> {
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
               child: TextField(
                 controller: _searchController,
                 style: const TextStyle(
@@ -100,7 +104,8 @@ class _AddKBPage extends State<ChatbotKnowledgePage> {
               context,
               sheet: ImportKnowledgePage(
                 assistantName: widget.assistantName,
-                assistantId: widget.id,
+                assistantId: assistantId,
+                onImportSuccess: fetchImportedKnowledge,
               ),
               showFullScreen: true,
             );
@@ -143,9 +148,8 @@ class _AddKBPage extends State<ChatbotKnowledgePage> {
                 createdAt: createdAt,
                 kbName: knowledgeBase.knowledgeName!,
                 id: knowledgeBase.kbId!,
-                delete: () {
-                  // todo: need handle here
-                },
+                delete: () => removeKnowledge(knowledgeId: knowledgeBase.kbId!),
+                isDeleteLoading: loadingStates[knowledgeBase.kbId] ?? false,
               )
             : const SizedBox(
                 height: 40,
@@ -164,7 +168,7 @@ class _AddKBPage extends State<ChatbotKnowledgePage> {
 
       final result = await AiAssistantService.getImportedKnowledge(
         context: context,
-        assistantId: widget.id,
+        assistantId: assistantId,
       );
 
       setState(() {
@@ -177,6 +181,93 @@ class _AddKBPage extends State<ChatbotKnowledgePage> {
         importedKnowledge = null;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> removeKnowledge({required String knowledgeId}) async {
+    final willDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content:
+            const Text('Are you sure you want to delete this knowledge base?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primaryColor,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (willDelete != true) return;
+
+    setState(() => loadingStates[knowledgeId] = true);
+
+    if (!mounted) return;
+
+    try {
+      final result = await AiAssistantService.removeKnowledgeFromAssistant(
+        context: context,
+        assistantId: assistantId,
+        knowledgeId: knowledgeId,
+      );
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              result ? 'Success' : 'Failed',
+              style: TextStyle(
+                color: result ? AppColors.primaryColor : Colors.red,
+              ),
+            ),
+            content: Text(
+              result
+                  ? 'Knowledge base has been remove successfully'
+                  : 'Failed to remove knowledge base. Please try again.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  fetchImportedKnowledge();
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error', style: TextStyle(color: Colors.red)),
+            content: const Text(
+                'An error occurred while removing. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => loadingStates[knowledgeId] = false);
+      }
     }
   }
 }
