@@ -160,16 +160,15 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                       reverse: true,
                       itemCount: _messages.length + (isTyping ? 1 : 0),
                       itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        final messageIndex = isTyping ? index - 1 : index;
-
                         if (isTyping && index == 0) {
                           return TypingIndicatorWidget(
-                            aiAgentThumbnail: message.assistant?.thumbnail,
+                            aiAgentThumbnail: currentAiAgent.thumbnail,
                           );
                         }
 
-                        if (messageIndex >= 0 && messageIndex < _messages.length) {
+                        final messageIndex = isTyping ? index - 1 : index;
+                        if (messageIndex >= 0 &&
+                            messageIndex < _messages.length) {
                           final message = _messages[messageIndex];
                           return ChatMessageWidget(
                             isUser: message.role == "user",
@@ -179,7 +178,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                           );
                         }
 
-                        return const SizedBox.shrink(); 
+                        return const SizedBox.shrink();
                       },
                     ),
             ),
@@ -311,7 +310,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                   final XFile? pickedFile = await _picker
                                       .pickImage(source: ImageSource.gallery);
                                   if (pickedFile != null) {
-                                    await _sendMessage(_conversationId, pickedFile);
+                                    await _sendMessage(
+                                        _conversationId, pickedFile);
                                   }
                                 },
                               ),
@@ -369,7 +369,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   }
 
   Future<void> _sendMessage(String? conversationId, [XFile? pickedFile]) async {
-    if ((pickedFile == null && _chatController.text.trim().isEmpty) || currentAiAgent.id.isEmpty) {
+    if ((pickedFile == null && _chatController.text.trim().isEmpty) ||
+        currentAiAgent.id.isEmpty) {
       return;
     }
 

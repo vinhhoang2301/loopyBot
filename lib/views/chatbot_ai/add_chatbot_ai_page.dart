@@ -1,8 +1,5 @@
 import 'dart:developer';
-
-import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/services/ai_assistant_service.dart';
-import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:final_project/widgets/text_input_widget.dart';
 import 'package:flutter/material.dart';
 
