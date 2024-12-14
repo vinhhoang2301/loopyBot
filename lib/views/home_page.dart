@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: _showAuthButtons ? 8 : 64),
+            padding: const EdgeInsets.symmetric(horizontal: 64),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -39,9 +39,10 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 64),
                 if (!_showAuthButtons)
                   MaterialButtonCustomWidget(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
                     onPressed: () => setState(() => _showAuthButtons = true),
                     content: const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           'Start',
@@ -51,6 +52,7 @@ class _HomePageState extends State<HomePage> {
                             fontSize: 24,
                           ),
                         ),
+                        SizedBox(width: 48),
                         Icon(
                           Icons.chevron_right_sharp,
                           color: AppColors.inverseTextColor,
@@ -61,9 +63,13 @@ class _HomePageState extends State<HomePage> {
                   )
                 else
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       MaterialButtonCustomWidget(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 12.0,
+                        ),
                         onPressed: () => Navigator.of(context).pushReplacementNamed(AppRoutes.register),
                         content: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -73,10 +79,10 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(
                                 color: AppColors.inverseTextColor,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 24,
+                                fontSize: 18,
                               ),
                             ),
-                            SizedBox(width: 24),
+                            SizedBox(width: 16),
                             Icon(
                               Icons.app_registration,
                               color: AppColors.inverseTextColor,
@@ -86,6 +92,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       MaterialButtonCustomWidget(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 12.0,
+                        ),
                         onPressed: () => Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage),
                         content: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -95,10 +105,10 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(
                                 color: AppColors.inverseTextColor,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 24,
+                                fontSize: 18,
                               ),
                             ),
-                            SizedBox(width: 24),
+                            SizedBox(width: 16),
                             Icon(
                               Icons.login,
                               color: AppColors.inverseTextColor,

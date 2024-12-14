@@ -72,6 +72,7 @@ class ResetPassword extends StatelessWidget {
                     height: 30,
                   ),
                   MaterialButtonCustomWidget(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
                     onPressed: enterDigitCode,
                     title: 'Enter 5 Digit Code',
                   ),

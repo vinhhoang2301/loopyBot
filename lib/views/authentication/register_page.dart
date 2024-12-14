@@ -42,6 +42,15 @@ class _RegisterPageState extends State<RegisterPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Create Your Account',
+                  style: TextStyle(
+                    color: AppColors.secondaryColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 80),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -73,27 +82,36 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 48),
                         MaterialButtonCustomWidget(
-                          onPressed: isLoading ? () {} : () async {
-                            _validateUserInfo();
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          onPressed: isLoading
+                              ? () {}
+                              : () async {
+                                  _validateUserInfo();
 
-                            if (emailError == null && passwordError == null) {
-                              signUp(
-                                context: context,
-                                username: usernameCtrl.text.trim(),
-                                email: emailCtrl.text.trim(),
-                                password: passwordCtrl.text.trim(),
-                              );
-                            }
-                          },
+                                  if (emailError == null &&
+                                      passwordError == null) {
+                                    signUp(
+                                      context: context,
+                                      username: usernameCtrl.text.trim(),
+                                      email: emailCtrl.text.trim(),
+                                      password: passwordCtrl.text.trim(),
+                                    );
+                                  }
+                                },
                           content: isLoading
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(color: AppColors.inverseTextColor),
+                                  child: CircularProgressIndicator(
+                                      color: AppColors.inverseTextColor),
                                 )
                               : const Text(
                                   'Register',
-                                  style: TextStyle(color: AppColors.inverseTextColor),
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.inverseTextColor,
+                                  ),
                                 ),
                         ),
                         const SizedBox(height: 48),
@@ -104,36 +122,46 @@ class _RegisterPageState extends State<RegisterPage> {
                           children: [
                             Expanded(
                               child: MaterialButtonCustomWidget(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 onPressed: () => Navigator.of(context)
                                     .pushNamed(AppRoutes.loginGmail),
-                                content: Center(
-                                  child: Row(
-                                    children: [
-                                      Image.asset(
-                                        'assets/icon/google_icon.png',
-                                        height: 24.0,
-                                        width: 24.0,
+                                content: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'assets/icon/google_icon.png',
+                                      height: 24.0,
+                                      width: 24.0,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    const Text(
+                                      'Google',
+                                      style: TextStyle(
+                                        color: AppColors.inverseTextColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16.0,
                                       ),
-                                      const SizedBox(width: 16),
-                                      const Text(
-                                        'Google',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16.0,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: MaterialButtonCustomWidget(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12.0),
                                 onPressed: () => Navigator.of(context)
                                     .pushReplacementNamed(AppRoutes.loginPage),
-                                title: 'LoopyBot',
+                                content: const Text(
+                                  'Loopy Bot',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.inverseTextColor,
+                                  ),
+                                ),
                               ),
                             ),
                           ],

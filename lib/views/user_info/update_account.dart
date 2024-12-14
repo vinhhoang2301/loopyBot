@@ -15,37 +15,40 @@ class UpdateAccount extends StatelessWidget {
           backgroundColor: AppColors.primaryColor,
           foregroundColor: AppColors.inverseTextColor,
         ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const _ContentWidget(content: 'Unlimited queries per month'),
-            const _ContentWidget(
-              content: 'AI Chat Models',
-              subContent: 'GPT-3.5 & GPT-4.0/Turbo & Gemini Pro & Gemini Ultra',
-            ),
-            const _ContentWidget(content: 'Jira Copilot Assistant'),
-            const _ContentWidget(
-                content: 'No request limits during high-traffic'),
-            const _ContentWidget(content: '2X faster response speed'),
-            const _ContentWidget(content: 'Priority email support'),
-            const SizedBox(height: 16),
-            const Text(
-              'Auto-renews for 500.000 đ/month until canceled',
-            ),
-            const SizedBox(height: 16),
-            MaterialButtonCustomWidget(
-              onPressed: () {},
-              title: 'Subscribe',
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            ),
-            const SizedBox(height: 16),
-            MaterialButtonCustomWidget(
-              onPressed: () {},
-              title: 'Restore Subscription',
-              isApproved: false,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            ),
-          ],
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const _ContentWidget(content: 'Unlimited queries per month'),
+              const _ContentWidget(
+                content: 'AI Chat Models',
+                subContent: 'GPT-3.5 & GPT-4.0/Turbo & Gemini Pro & Gemini Ultra',
+              ),
+              const _ContentWidget(content: 'Jira Copilot Assistant'),
+              const _ContentWidget(
+                  content: 'No request limits during high-traffic'),
+              const _ContentWidget(content: '2X faster response speed'),
+              const _ContentWidget(content: 'Priority email support'),
+              const SizedBox(height: 16),
+              const Text(
+                'Auto-renews for 500.000 đ/month until canceled',
+              ),
+              const SizedBox(height: 16),
+              MaterialButtonCustomWidget(
+                onPressed: () {},
+                title: 'Subscribe',
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+              ),
+              const SizedBox(height: 16),
+              MaterialButtonCustomWidget(
+                onPressed: () {},
+                title: 'Restore Subscription',
+                isApproved: false,
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+              ),
+            ],
+          ),
         ),
       ),
     );

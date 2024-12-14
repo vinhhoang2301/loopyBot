@@ -30,9 +30,9 @@ class MaterialButtonCustomWidget extends StatelessWidget {
 
     return MaterialButton(
       onPressed: onPressed,
-      padding: padding,
+      padding: EdgeInsets.zero,
       child: Container(
-        padding: const EdgeInsets.all(16.0),
+        padding: padding,
         decoration: buttonStyle ??
             BoxDecoration(
               color: isApproved == true

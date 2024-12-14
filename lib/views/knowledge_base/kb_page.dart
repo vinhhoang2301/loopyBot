@@ -244,6 +244,7 @@ class _KBPage extends State<KBPage> {
               : 'Failed to delete Knowledge Base. Please try again.'),
           actions: [
             MaterialButtonCustomWidget(
+              padding: const EdgeInsets.symmetric(vertical: 6),
               onPressed: () async {
                 Navigator.of(context).pop();
                 if (result) {

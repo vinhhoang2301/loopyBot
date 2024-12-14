@@ -211,6 +211,7 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
               : 'Failed to delete AI Assistant. Please try again.'),
           actions: [
             MaterialButtonCustomWidget(
+              padding: const EdgeInsets.symmetric(vertical: 6),
               onPressed: () async {
                 Navigator.of(context).pop();
                 if (result) {

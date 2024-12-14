@@ -96,6 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 25.0),
                   MaterialButtonCustomWidget(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     onPressed: isLoading
                         ? () {}
                         : () async {
@@ -117,7 +118,11 @@ class _LoginPageState extends State<LoginPage> {
                           )
                         : const Text(
                             'Sign In',
-                            style: TextStyle(color: AppColors.inverseTextColor),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.inverseTextColor,
+                            ),
                           ),
                   ),
                   const SizedBox(height: 25),
@@ -148,6 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 25),
                   MaterialButtonCustomWidget(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     onPressed: signInWithGoogle,
                     content: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -160,9 +166,9 @@ class _LoginPageState extends State<LoginPage> {
                         Text(
                           'Join With Google',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16.0,
+                            color: AppColors.inverseTextColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18.0,
                           ),
                         ),
                       ],
@@ -248,7 +254,8 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
 
-      if(result.isEmpty) Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
+      if (result.isEmpty)
+        Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
     }
 
     setState(() => isLoading = false);
