@@ -9,14 +9,17 @@ class KBItem extends StatelessWidget {
     required this.kbName,
     required this.createdAt,
     required this.delete,
+    required this.isDeleteLoading,
     this.firstAction,
   });
 
   final String id;
   final String kbName;
   final DateTime createdAt;
-  final IconButton? firstAction;
   final void Function() delete;
+  final bool isDeleteLoading;
+
+  final IconButton? firstAction;
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +57,21 @@ class KBItem extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            firstAction ?? const SizedBox.shrink(),
+                            if (firstAction != null) firstAction!,
                             IconButton(
-                              icon: const Icon(Icons.delete_outlined),
+                              icon: isDeleteLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                    ),
                               onPressed: () {
                                 delete.call();
                               },

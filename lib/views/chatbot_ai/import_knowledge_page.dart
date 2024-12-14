@@ -14,10 +14,12 @@ class ImportKnowledgePage extends StatefulWidget {
     super.key,
     required this.assistantName,
     required this.assistantId,
+    this.onImportSuccess,
   });
 
   final String assistantName;
   final String assistantId;
+  final void Function()? onImportSuccess;
 
   @override
   State<ImportKnowledgePage> createState() => _ImportKnowledgePageState();
@@ -151,6 +153,7 @@ class _ImportKnowledgePageState extends State<ImportKnowledgePage> {
                 delete: () {
                   // todo: need handle here
                 },
+                isDeleteLoading: false,
               )
             : const SizedBox(
                 height: 40,
@@ -237,7 +240,10 @@ class _ImportKnowledgePageState extends State<ImportKnowledgePage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (result) widget.onImportSuccess?.call();
+                },
                 child: const Text('Close'),
               ),
             ],

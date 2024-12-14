@@ -25,6 +25,7 @@ class _KBPage extends State<KBPage> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
+  Map<String, bool> deleteLoadingStates = {};
   List<KbModel>? allKnowledge = [];
   List<KbModel>? filteredKnowledge = [];
   bool isLoading = false;
@@ -168,6 +169,7 @@ class _KBPage extends State<KBPage> {
                 kbName: kbItem.knowledgeName!,
                 id: kbItem.kbId!,
                 delete: () => deleteKnowledge(context, id: kbItem.kbId!),
+                isDeleteLoading: deleteLoadingStates[kbItem.kbId!] ?? false,
               )
             : const SizedBox(
                 height: 40,
@@ -223,6 +225,8 @@ class _KBPage extends State<KBPage> {
 
     if (shouldDelete != true || !context.mounted) return;
 
+    setState(() => deleteLoadingStates[id] = true);
+
     final result = await KbService.deleteKnowledge(
       context: context,
       id: id,
@@ -254,5 +258,7 @@ class _KBPage extends State<KBPage> {
         );
       },
     );
+
+    setState(() => deleteLoadingStates[id] = false);
   }
 }
