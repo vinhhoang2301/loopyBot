@@ -6,6 +6,7 @@ import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/chatbot_ai_knowledge_page.dart';
 import 'package:final_project/views/chatbot_ai/edit_chatbot_ai_page.dart';
+import 'package:final_project/views/chatbot_ai/publish_chatbot_ai_page.dart';
 import 'package:final_project/views/empty_page.dart';
 import 'package:final_project/widgets/chat_message_widget.dart';
 import 'package:final_project/widgets/text_input_widget.dart';
@@ -124,78 +125,91 @@ class _PreviewChatbot extends State<PreviewChatbot> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            MaterialButton(
-                              onPressed: _isCreatingNewThread
-                                  ? null
-                                  : newThreadPlayGround,
-                              color: AppColors.primaryColor,
-                              textColor: AppColors.inverseTextColor,
-                              padding:
-                                  const EdgeInsets.only(right: 16, left: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              MaterialButton(
+                                onPressed: _isCreatingNewThread
+                                    ? null
+                                    : newThreadPlayGround,
+                                color: AppColors.primaryColor,
+                                textColor: AppColors.inverseTextColor,
+                                padding:
+                                    const EdgeInsets.only(right: 16, left: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: _isCreatingNewThread
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
+                                      )
+                                    : const Row(
+                                        children: [
+                                          Icon(Icons.add),
+                                          SizedBox(width: 4),
+                                          Text('New Thread'),
+                                        ],
+                                      ),
                               ),
-                              child: _isCreatingNewThread
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
-                                    )
-                                  : const Row(
-                                      children: [
-                                        Icon(Icons.add),
-                                        SizedBox(width: 4),
-                                        Text('New Thread'),
-                                      ],
-                                    ),
-                            ),
-                            const SizedBox(width: 8),
-                            // IconButton(
-                            //   tooltip: 'Develop',
-                            //   onPressed: () {
-                            //     Navigator.of(context).push(
-                            //       MaterialPageRoute(
-                            //         builder: (context) {
-                            //           return const DevelopChatbotAI();
-                            //         },
-                            //       ),
-                            //     );
-                            //   },
-                            //   icon: const Icon(
-                            //     Icons.developer_board,
-                            //     color: AppColors.primaryColor,
-                            //   ),
-                            // ),
-                            MaterialButton(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ChatbotKnowledgePage(
-                                    id: assistant?.id ?? '',
-                                    assistantName:
-                                        assistant?.assistantName ?? '',
-                                  ),
+                              MaterialButton(
+                                onPressed: () {
+                                  if (assistant != null) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => PublishAssistantPage(
+                                          assistantId: assistant!.id!,
+                                          assistantName: assistant!.assistantName!,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                color: AppColors.primaryColor,
+                                textColor: AppColors.inverseTextColor,
+                                padding: const EdgeInsets.only(right: 16, left: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.backup_sharp),
+                                    SizedBox(width: 8),
+                                    Text('Publish'),
+                                  ],
                                 ),
                               ),
-                              color: AppColors.primaryColor,
-                              textColor: AppColors.inverseTextColor,
-                              padding:
-                                  const EdgeInsets.only(right: 16, left: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
+                              MaterialButton(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatbotKnowledgePage(
+                                      id: assistant?.id ?? '',
+                                      assistantName:
+                                          assistant?.assistantName ?? '',
+                                    ),
+                                  ),
+                                ),
+                                color: AppColors.primaryColor,
+                                textColor: AppColors.inverseTextColor,
+                                padding:
+                                    const EdgeInsets.only(right: 16, left: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.auto_awesome_mosaic_rounded),
+                                    SizedBox(width: 4),
+                                    Text('Knowledge'),
+                                  ],
+                                ),
                               ),
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.auto_awesome_mosaic_rounded),
-                                  SizedBox(width: 4),
-                                  Text('Knowledge Base'),
-                                ],
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Container(
                           decoration: BoxDecoration(
