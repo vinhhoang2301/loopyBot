@@ -9,11 +9,13 @@ class KBItem extends StatelessWidget {
     required this.kbName,
     required this.createdAt,
     required this.delete,
+    this.firstAction,
   });
 
   final String id;
   final String kbName;
   final DateTime createdAt;
+  final IconButton? firstAction;
   final void Function() delete;
 
   @override
@@ -35,6 +37,7 @@ class KBItem extends StatelessWidget {
               height: 64,
               width: 64,
             ),
+            const SizedBox(width: 4),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -47,14 +50,11 @@ class KBItem extends StatelessWidget {
                       children: [
                         Text(
                           kbName,
-                          style: TextStyle(fontSize: 18),
+                          style: const TextStyle(fontSize: 18),
                         ),
                         Row(
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.star_border_outlined),
-                              onPressed: () {},
-                            ),
+                            firstAction ?? const SizedBox.shrink(),
                             IconButton(
                               icon: const Icon(Icons.delete_outlined),
                               onPressed: () {

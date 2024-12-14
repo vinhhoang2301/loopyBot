@@ -3,11 +3,74 @@ import 'dart:developer';
 import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/key.dart';
 import 'package:final_project/models/ai_assistant_model.dart';
+import 'package:final_project/models/kb_model.dart';
 import 'package:final_project/services/kb_authen_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
 class AiAssistantService {
+  static Future<bool> importKnowledgeToAssistant({
+    required BuildContext context,
+    required String assistantId,
+    required String knowledgeId,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    log('assistant id: $assistantId');
+    log('knowledge id: $knowledgeId');
+
+    log('access token: $accessToken');
+
+    try {
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+      var request = http.Request(
+          'POST', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$assistantId/knowledges/$knowledgeId'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        log('error: ${response.statusCode}');
+        return false;
+      }
+    } catch (err) {
+      log('Error in Import Knowledge to Assistant: ${err.toString()}');
+      return false;
+    }
+  }
+
+  static Future<List<KbModel>?> getImportedKnowledge({
+    required BuildContext context,
+    required String assistantId,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+      var request = http.Request(
+          'GET', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$assistantId/knowledges?q&order=DESC&order_field=createdAt&offset&limit=20'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = jsonDecode(await response.stream.bytesToString());
+
+        return (result['data'] as List<dynamic>).map((item) => KbModel.fromJson(item)).toList();
+      } else {
+        log('error: ${response.statusCode}');
+        return null;
+      }
+    } catch (err) {
+      log('Error in Get Imported Knowledge of Assistant: ${err.toString()}');
+      return null;
+    }
+  }
+
   static Future<List<AiAssistantModel>?> getAllAssistants({
     required BuildContext context,
     Order order = Order.DESC,

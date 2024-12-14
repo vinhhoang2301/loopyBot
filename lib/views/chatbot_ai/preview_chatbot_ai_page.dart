@@ -4,8 +4,7 @@ import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/models/ai_assistant_model.dart';
 import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/utils/global_methods.dart';
-import 'package:final_project/views/chatbot_ai/add_kb_chatbot_ai_page.dart';
-import 'package:final_project/views/chatbot_ai/develop_chatbot_ai.dart';
+import 'package:final_project/views/chatbot_ai/chatbot_ai_knowledge_page.dart';
 import 'package:final_project/views/chatbot_ai/edit_chatbot_ai_page.dart';
 import 'package:final_project/views/empty_page.dart';
 import 'package:final_project/widgets/chat_message_widget.dart';
@@ -21,236 +20,249 @@ class PreviewChatbot extends StatefulWidget {
   final String id;
 
   @override
-  State<PreviewChatbot> createState() => _MainChatPageState();
+  State<PreviewChatbot> createState() => _PreviewChatbot();
 }
 
-class _MainChatPageState extends State<PreviewChatbot> {
+class _PreviewChatbot extends State<PreviewChatbot> {
   late final String _assistantId;
 
+  final List<_ChatMsg> _messages = [];
   final TextEditingController _textController = TextEditingController();
+  final FocusNode chatFocusNode = FocusNode();
 
   bool _isLoading = false;
   bool _isCreatingNewThread = false;
   AiAssistantModel? assistant;
-  final List<_ChatMsg> _messages = [];
 
   @override
   void initState() {
     _assistantId = widget.id;
+    chatFocusNode.addListener(() => setState(() {}));
     fetchAssistant();
-
     super.initState();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          assistant != null ? assistant!.assistantName! : '...',
-        ),
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: AppColors.inverseTextColor,
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_outlined),
-            onSelected: (value) async {
-              switch (value) {
-                case 'edit_assistant':
-                  editAssistant();
-                  break;
-                case 'update_instructions':
-                  updateInstructions();
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'edit_assistant',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: AppColors.primaryColor),
-                    SizedBox(width: 8),
-                    Text('Edit Assistant'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'update_instructions',
-                child: Row(
-                  children: [
-                    Icon(Icons.description, color: AppColors.primaryColor),
-                    SizedBox(width: 8),
-                    Text('Update Instructions'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      resizeToAvoidBottomInset: true,
-      body: assistant != null
-          ? Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    reverse: true,
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final message = _messages[index];
+  void dispose() {
+    _textController.dispose();
+    chatFocusNode.dispose();
+    super.dispose();
+  }
 
-                      return ChatMessageWidget(
-                        content: message.msg,
-                        isUser: message.isUser,
-                      );
-                    },
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        chatFocusNode.unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            assistant != null ? assistant!.assistantName! : '...',
+          ),
+          backgroundColor: AppColors.primaryColor,
+          foregroundColor: AppColors.inverseTextColor,
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.settings),
+              onSelected: (value) async {
+                switch (value) {
+                  case 'edit_assistant':
+                    editAssistant();
+                    break;
+                  case 'update_instructions':
+                    updateInstructions();
+                    break;
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'edit_assistant',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: AppColors.primaryColor),
+                      SizedBox(width: 8),
+                      Text('Edit Assistant'),
+                    ],
                   ),
                 ),
-                const Divider(height: 1.0),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                const PopupMenuItem<String>(
+                  value: 'update_instructions',
+                  child: Row(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              MaterialButton(
-                                onPressed: _isCreatingNewThread ? null : newThreadPlayGround,
-                                color: AppColors.primaryColor,
-                                textColor: AppColors.inverseTextColor,
-                                padding: const EdgeInsets.only(right: 16, left: 8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                child: _isCreatingNewThread
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2
-                                        ),
-                                      )
-                                    : const Row(
-                                        children: [
-                                          Icon(Icons.add),
-                                          SizedBox(width: 4),
-                                          Text('New Thread'),
-                                        ],
-                                      ),
-                              ),
-                              IconButton(
-                                tooltip: 'Develop',
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return const DevelopChatbotAI();
-                                      },
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.developer_board,
-                                  color: AppColors.primaryColor,
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: 'Add KB',
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return const AddKBToChatbot();
-                                      },
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.book,
-                                  color: AppColors.primaryColor,
-                                ),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.backgroundColor2,
-                            width: 2.0,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: TextField(
-                                controller: _textController,
-                                minLines: 1,
-                                maxLines: 4,
-                                expands: false,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Chat with your Chatbot',
-                                ),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(Icons.settings_suggest_outlined),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.image,
-                                        color: AppColors.primaryColor,
-                                      ),
-                                      onPressed: () {},
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.send,
-                                        color: AppColors.primaryColor,
-                                      ),
-                                      onPressed: askAssistant,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      Icon(Icons.description, color: AppColors.primaryColor),
+                      SizedBox(width: 8),
+                      Text('Update Instructions'),
                     ],
                   ),
                 ),
               ],
-            )
-          : _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : const Center(
-                  child: EmptyPage(content: 'Failed to Get AI Assistant Chatbot'),
-                ),
+            ),
+          ],
+        ),
+        resizeToAvoidBottomInset: true,
+        body: assistant != null
+            ? Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      reverse: true,
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        final message = _messages[index];
+
+                        return ChatMessageWidget(
+                          content: message.msg,
+                          isUser: message.isUser,
+                        );
+                      },
+                    ),
+                  ),
+                  const Divider(height: 1.0),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            MaterialButton(
+                              onPressed: _isCreatingNewThread
+                                  ? null
+                                  : newThreadPlayGround,
+                              color: AppColors.primaryColor,
+                              textColor: AppColors.inverseTextColor,
+                              padding:
+                                  const EdgeInsets.only(right: 16, left: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: _isCreatingNewThread
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Row(
+                                      children: [
+                                        Icon(Icons.add),
+                                        SizedBox(width: 4),
+                                        Text('New Thread'),
+                                      ],
+                                    ),
+                            ),
+                            const SizedBox(width: 8),
+                            // IconButton(
+                            //   tooltip: 'Develop',
+                            //   onPressed: () {
+                            //     Navigator.of(context).push(
+                            //       MaterialPageRoute(
+                            //         builder: (context) {
+                            //           return const DevelopChatbotAI();
+                            //         },
+                            //       ),
+                            //     );
+                            //   },
+                            //   icon: const Icon(
+                            //     Icons.developer_board,
+                            //     color: AppColors.primaryColor,
+                            //   ),
+                            // ),
+                            MaterialButton(
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => ChatbotKnowledgePage(
+                                    id: assistant?.id ?? '',
+                                    assistantName:
+                                        assistant?.assistantName ?? '',
+                                  ),
+                                ),
+                              ),
+                              color: AppColors.primaryColor,
+                              textColor: AppColors.inverseTextColor,
+                              padding:
+                                  const EdgeInsets.only(right: 16, left: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.auto_awesome_mosaic_rounded),
+                                  SizedBox(width: 4),
+                                  Text('Knowledge Base'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: chatFocusNode.hasFocus
+                                  ? AppColors.primaryColor
+                                  : AppColors.backgroundColor2,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: TextField(
+                                  controller: _textController,
+                                  focusNode: chatFocusNode,
+                                  minLines: 1,
+                                  maxLines: 4,
+                                  expands: false,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: 'Chat with your Chatbot',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.image,
+                                      color: AppColors.primaryColor,
+                                    ),
+                                    onPressed: () {},
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.send,
+                                      color: AppColors.primaryColor,
+                                    ),
+                                    onPressed: askAssistant,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : const Center(
+                    child: EmptyPage(
+                        content: 'Failed to Get AI Assistant Chatbot'),
+                  ),
+      ),
     );
   }
 
@@ -386,10 +398,12 @@ class _MainChatPageState extends State<PreviewChatbot> {
           _isCreatingNewThread = false;
         });
       }
-    } catch(err) {
+    } catch (err) {
       log('Error when Updating New Thread');
     }
   }
+
+  Future<void> addKnowledge() async {}
 }
 
 class _ChatMsg {
@@ -412,7 +426,8 @@ class _UpdateInstructionsSheet extends StatefulWidget {
   });
 
   @override
-  State<_UpdateInstructionsSheet> createState() => _UpdateInstructionsSheetState();
+  State<_UpdateInstructionsSheet> createState() =>
+      _UpdateInstructionsSheetState();
 }
 
 class _UpdateInstructionsSheetState extends State<_UpdateInstructionsSheet> {
@@ -439,13 +454,17 @@ class _UpdateInstructionsSheetState extends State<_UpdateInstructionsSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          CustomTextField(controller: widget.instructionCtrl),
+          CustomTextField(
+            controller: widget.instructionCtrl,
+            hintText: 'Enter New Instructions',
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                onPressed: isLoading ? null : () => Navigator.pop(context, false),
+                onPressed:
+                    isLoading ? null : () => Navigator.pop(context, false),
                 child: const Text('Cancel'),
               ),
               const SizedBox(width: 8),
@@ -461,7 +480,8 @@ class _UpdateInstructionsSheetState extends State<_UpdateInstructionsSheet> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : const Text('Update'),
