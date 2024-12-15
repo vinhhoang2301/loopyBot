@@ -1,8 +1,12 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/inner_pages/messenger_configure.dart';
 import 'package:final_project/views/chatbot_ai/inner_pages/slack_configure.dart';
 import 'package:final_project/views/chatbot_ai/inner_pages/telegram_configure.dart';
+import 'package:final_project/views/chatbot_ai/publish_results_page.dart';
 import 'package:flutter/material.dart';
 
 class PublishAssistantPage extends StatefulWidget {
@@ -31,10 +35,16 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
     'messenger': false,
   };
 
+  bool isPublishing = false;
+  String telegramConfigurations = '';
+  Map<String, String> slackConfigurations = {};
+  Map<String, String> messengerConfigurations = {};
+
   @override
   Widget build(BuildContext context) {
     final paddingTop = MediaQuery.of(context).viewPadding.top;
-    bool hasSelectedPlatform = selectedPlatforms.values.any((selected) => selected);
+    bool hasSelectedPlatform =
+        selectedPlatforms.values.any((selected) => selected);
 
     return Scaffold(
       appBar: AppBar(
@@ -76,7 +86,7 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                 setState(() => selectedPlatforms['slack'] = value);
               },
               onConfigure: () async {
-                final result = await Utils.showBottomSheet(
+                slackConfigurations = await Utils.showBottomSheet(
                   context,
                   sheet: Padding(
                     padding: EdgeInsets.only(top: paddingTop),
@@ -85,7 +95,7 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                   showFullScreen: true,
                 );
 
-                setState(() => configuredPlatforms['slack'] = result);
+                setState(() => configuredPlatforms['slack'] = true);
               },
               isConfigured: configuredPlatforms['slack'] ?? false,
             ),
@@ -98,7 +108,7 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                 setState(() => selectedPlatforms['telegram'] = value);
               },
               onConfigure: () async {
-                final result = await Utils.showBottomSheet(
+                telegramConfigurations = await Utils.showBottomSheet(
                   context,
                   sheet: Padding(
                     padding: EdgeInsets.only(top: paddingTop),
@@ -107,7 +117,7 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                   showFullScreen: true,
                 );
 
-                setState(() => configuredPlatforms['telegram'] = result);
+                setState(() => configuredPlatforms['telegram'] = true);
               },
               isConfigured: configuredPlatforms['telegram'] ?? false,
             ),
@@ -120,16 +130,17 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                 setState(() => selectedPlatforms['messenger'] = value);
               },
               onConfigure: () async {
-                final result = await Utils.showBottomSheet(
+                messengerConfigurations = await Utils.showBottomSheet(
                   context,
                   sheet: Padding(
                     padding: EdgeInsets.only(top: paddingTop),
-                    child: MessengerConfigurePage(assistantId: widget.assistantId),
+                    child:
+                        MessengerConfigurePage(assistantId: widget.assistantId),
                   ),
                   showFullScreen: true,
                 );
 
-                setState(() => configuredPlatforms['messenger'] = result);
+                setState(() => configuredPlatforms['messenger'] = true);
               },
               isConfigured: configuredPlatforms['messenger'] ?? false,
             ),
@@ -150,22 +161,135 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
           ],
         ),
         child: ElevatedButton(
-          onPressed: hasSelectedPlatform ? () {} : null,
+          onPressed: isPublishing
+              ? null
+              : hasSelectedPlatform
+                  ? publishChatbot
+                  : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: AppColors.inverseTextColor,
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
-          child: const Text(
-            'Publish Chatbot',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: isPublishing
+              ? const SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                    color: AppColors.inverseTextColor,
+                  ),
+                )
+              : const Text(
+                  'Publish Chatbot',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
       ),
     );
+  }
+
+  Future<void> publishChatbot() async {
+    List<Map<String, dynamic>> publishResults = [];
+
+    for (String platform in selectedPlatforms.keys) {
+      if (selectedPlatforms[platform]! && !configuredPlatforms[platform]!) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Please configure ${platform.capitalize()} before publishing',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+
+        return;
+      } else if (selectedPlatforms[platform]! &&
+          configuredPlatforms[platform]!) {
+        setState(() => isPublishing = true);
+
+        try {
+          bool success = false;
+
+          switch (platform) {
+            case 'slack':
+              success = await publishToSlack(widget.assistantId);
+              break;
+            case 'telegram':
+              success = await publishToTelegram(widget.assistantId);
+              break;
+            case 'messenger':
+              success = await publishToMessenger(widget.assistantId);
+              break;
+            default:
+              log('Something went wrong when publishing. Platform: $platform');
+              break;
+          }
+
+          publishResults.add({
+            'platform': platform,
+            'success': success,
+          });
+        } catch (e) {
+          publishResults.add({
+            'platform': platform,
+            'success': false,
+          });
+        }
+
+        setState(() => isPublishing = false);
+
+        if (publishResults.isNotEmpty) {
+          if (!mounted) return;
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PublishResultsPage(
+                results: publishResults,
+                assistantName: widget.assistantName,
+              ),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<bool> publishToSlack(String assistantId) async {
+    final result = await AiAssistantService.publishSlackBot(
+      context: context,
+      assistantId: assistantId,
+      botToken: slackConfigurations['token'].toString(),
+      clientId: slackConfigurations['clientId'].toString(),
+      clientSecret: slackConfigurations['clientSecret'].toString(),
+      signingSecret: slackConfigurations['signingSecret'].toString(),
+    );
+
+    return result;
+  }
+
+  Future<bool> publishToTelegram(String assistantId) async {
+    final result = await AiAssistantService.publishTelegramBot(
+      context: context,
+      assistantId: assistantId,
+      botToken: telegramConfigurations.toString(),
+    );
+
+    return result;
+  }
+
+  Future<bool> publishToMessenger(String assistantId) async {
+    final result = await AiAssistantService.publishMessengerBot(
+      context: context,
+      assistantId: assistantId,
+      botToken: messengerConfigurations['token'].toString(),
+      pageId: messengerConfigurations['botPageId'].toString(),
+      appSecret: messengerConfigurations['botAppSecret'].toString(),
+    );
+
+    return result;
   }
 }
 
@@ -194,7 +318,9 @@ class _PublishAppItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primaryColor : AppColors.backgroundColor2,
+            color: isSelected
+                ? AppColors.primaryColor
+                : AppColors.backgroundColor2,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -233,13 +359,17 @@ class _PublishAppItem extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: isConfigured ? Colors.green.shade100 : AppColors.backgroundColor2,
+                    color: isConfigured
+                        ? Colors.green.shade100
+                        : AppColors.backgroundColor2,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     isConfigured ? 'Verified' : 'Not Configure',
                     style: TextStyle(
-                      color: isConfigured ? Colors.green : AppColors.defaultTextColor,
+                      color: isConfigured
+                          ? Colors.green
+                          : AppColors.defaultTextColor,
                       fontSize: 12,
                     ),
                   ),

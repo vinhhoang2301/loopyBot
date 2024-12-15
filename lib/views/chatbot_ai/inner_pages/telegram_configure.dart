@@ -38,9 +38,11 @@ class _TelegramConfigurePageState extends State<TelegramConfigurePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const HeaderSection(
-                title: 'Connect to Telegram Bots and chat with this bot in Telegram App',
+                title:
+                    'Connect to Telegram Bots and chat with this bot in Telegram App',
                 description: 'How to obtain Telegram configurations?',
-                urlString: 'https://jarvis.cx/help/knowledge-base/publish-bot/telegram',
+                urlString:
+                    'https://jarvis.cx/help/knowledge-base/publish-bot/telegram',
               ),
               const SizedBox(height: 12),
               _TelegramInformation(
@@ -63,7 +65,8 @@ class _TelegramConfigurePageState extends State<TelegramConfigurePage> {
                   const SizedBox(width: 8),
                   isConfiguring
                       ? Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           height: 16,
                           width: 16,
                           child: const CircularProgressIndicator(
@@ -102,9 +105,11 @@ class _TelegramConfigurePageState extends State<TelegramConfigurePage> {
   void handleConfigure() async {
     if (validateFields()) {
       setState(() => isConfiguring = true);
+
+      final botToken = tokenCtrl.text.trim();
       final result = await AiAssistantService.verifyTelegramBotConfigure(
         context: context,
-        botToken: tokenCtrl.text.trim(),
+        botToken: botToken,
       );
 
       setState(() => isConfiguring = false);
@@ -112,13 +117,17 @@ class _TelegramConfigurePageState extends State<TelegramConfigurePage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: result ? const Text('Configuration Saved Successfully') : const Text('Verify Telegram Bot Failed'),
+          content: result
+              ? const Text('Configuration Saved Successfully')
+              : const Text('Verify Telegram Bot Failed'),
           backgroundColor: result ? Colors.green : Colors.red,
           duration: const Duration(seconds: 1),
         ),
       );
 
-      Navigator.of(context).pop(result);
+      if (result) {
+        Navigator.of(context).pop(botToken);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

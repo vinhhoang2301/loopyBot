@@ -53,9 +53,11 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const HeaderSection(
-                title: 'Connect to Messenger Bots and chat with this bot in Messenger App',
+                title:
+                    'Connect to Messenger Bots and chat with this bot in Messenger App',
                 description: 'How to obtain Messenger configurations?',
-                urlString: 'https://jarvis.cx/help/knowledge-base/publish-bot/messenger',
+                urlString:
+                    'https://jarvis.cx/help/knowledge-base/publish-bot/messenger',
               ),
               const SizedBox(height: 12),
               _MessengerCopyLinkSection(widget.assistantId),
@@ -82,7 +84,8 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
                   const SizedBox(width: 8),
                   isConfiguring
                       ? Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           height: 16,
                           width: 16,
                           child: const CircularProgressIndicator(
@@ -155,13 +158,17 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: result ? const Text('Configuration Saved Successfully') : const Text('Verify Messenger Bot Failed'),
+          content: result
+              ? const Text('Configuration Saved Successfully')
+              : const Text('Verify Messenger Bot Failed'),
           backgroundColor: result ? Colors.green : Colors.red,
           duration: const Duration(seconds: 1),
         ),
       );
 
-      Navigator.of(context).pop(result);
+      if (result) {
+        Navigator.of(context).pop(messengerConfig);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

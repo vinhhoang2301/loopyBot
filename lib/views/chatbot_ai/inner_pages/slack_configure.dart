@@ -173,7 +173,9 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
         ),
       );
 
-      Navigator.of(context).pop(result);
+      if (result) {
+        Navigator.of(context).pop(slackConfig);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
