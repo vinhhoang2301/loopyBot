@@ -34,9 +34,7 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
   @override
   Widget build(BuildContext context) {
     final paddingTop = MediaQuery.of(context).viewPadding.top;
-    bool hasSelectedPlatform =
-        selectedPlatforms.values.any((selected) => selected);
-
+    bool hasSelectedPlatform = selectedPlatforms.values.any((selected) => selected);
 
     return Scaffold(
       appBar: AppBar(
@@ -78,15 +76,16 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                 setState(() => selectedPlatforms['slack'] = value);
               },
               onConfigure: () async {
-                setState(() => configuredPlatforms['slack'] = true);
-                await Utils.showBottomSheet(
+                final result = await Utils.showBottomSheet(
                   context,
                   sheet: Padding(
                     padding: EdgeInsets.only(top: paddingTop),
-                    child: const SlackConfigurePage(),
+                    child: SlackConfigurePage(assistantId: widget.assistantId),
                   ),
                   showFullScreen: true,
                 );
+
+                setState(() => configuredPlatforms['slack'] = result);
               },
               isConfigured: configuredPlatforms['slack'] ?? false,
             ),
@@ -99,8 +98,7 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                 setState(() => selectedPlatforms['telegram'] = value);
               },
               onConfigure: () async {
-                setState(() => configuredPlatforms['telegram'] = true);
-                await Utils.showBottomSheet(
+                final result = await Utils.showBottomSheet(
                   context,
                   sheet: Padding(
                     padding: EdgeInsets.only(top: paddingTop),
@@ -108,6 +106,8 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                   ),
                   showFullScreen: true,
                 );
+
+                setState(() => configuredPlatforms['telegram'] = result);
               },
               isConfigured: configuredPlatforms['telegram'] ?? false,
             ),
@@ -120,15 +120,16 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
                 setState(() => selectedPlatforms['messenger'] = value);
               },
               onConfigure: () async {
-                setState(() => configuredPlatforms['messenger'] = true);
-                await Utils.showBottomSheet(
+                final result = await Utils.showBottomSheet(
                   context,
                   sheet: Padding(
                     padding: EdgeInsets.only(top: paddingTop),
-                    child: const MessengerConfigurePage(),
+                    child: MessengerConfigurePage(assistantId: widget.assistantId),
                   ),
                   showFullScreen: true,
                 );
+
+                setState(() => configuredPlatforms['messenger'] = result);
               },
               isConfigured: configuredPlatforms['messenger'] ?? false,
             ),
@@ -193,9 +194,7 @@ class _PublishAppItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primaryColor
-                : AppColors.backgroundColor2,
+            color: isSelected ? AppColors.primaryColor : AppColors.backgroundColor2,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -211,17 +210,16 @@ class _PublishAppItem extends StatelessWidget {
                   onChanged: (value) => onSelected(value ?? false),
                   activeColor: AppColors.primaryColor,
                 ),
-                const SizedBox(width: 8),
                 Image.asset(
                   asset,
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Text(
                   name,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -229,15 +227,34 @@ class _PublishAppItem extends StatelessWidget {
             ),
             Row(
               children: [
-                const Text('Status'),
-                const SizedBox(width: 32),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isConfigured ? Colors.green.shade100 : AppColors.backgroundColor2,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isConfigured ? 'Verified' : 'Not Configure',
+                    style: TextStyle(
+                      color: isConfigured ? Colors.green : AppColors.defaultTextColor,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
                 TextButton(
                   style: TextButton.styleFrom(
                     backgroundColor: AppColors.primaryColor.withOpacity(0.15),
                     foregroundColor: AppColors.primaryColor,
                   ),
                   onPressed: onConfigure,
-                  child: const Text('Configure'),
+                  child: const Text(
+                    'Configure',
+                    style: TextStyle(fontSize: 12),
+                  ),
                 ),
               ],
             )

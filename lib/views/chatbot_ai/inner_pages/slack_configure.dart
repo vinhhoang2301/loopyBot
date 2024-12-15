@@ -1,13 +1,18 @@
-import 'dart:developer';
-
+import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/views/chatbot_ai/inner_pages/header_section_widget.dart';
 import 'package:final_project/widgets/copy_link_section_widget.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:flutter/material.dart';
 
 class SlackConfigurePage extends StatefulWidget {
-  const SlackConfigurePage({super.key});
+  const SlackConfigurePage({
+    super.key,
+    required this.assistantId,
+  });
+
+  final String assistantId;
 
   @override
   State<SlackConfigurePage> createState() => _SlackConfigurePageState();
@@ -19,6 +24,7 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
   final TextEditingController clientSecretCtrl = TextEditingController();
   final TextEditingController signSecretCtrl = TextEditingController();
 
+  bool isConfiguring = false;
   Map<String, String?> fieldErrors = {
     'token': null,
     'clientId': null,
@@ -55,7 +61,7 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
                 urlString: 'https://jarvis.cx/help/knowledge-base/publish-bot/slack',
               ),
               const SizedBox(height: 12),
-              const _SlackCopyLinkSection(),
+              _SlackCopyLinkSection(widget.assistantId),
               const SizedBox(height: 12),
               _SlackInformation(
                 tokenCtrl: tokenCtrl,
@@ -78,14 +84,23 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  MaterialButtonCustomWidget(
-                    onPressed: handleConfigure,
-                    title: 'Configure',
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 12.0,
-                    ),
-                  ),
+                  isConfiguring
+                      ? Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          height: 16,
+                          width: 16,
+                          child: const CircularProgressIndicator(
+                            color: AppColors.primaryColor,
+                          ),
+                        )
+                      : MaterialButtonCustomWidget(
+                          onPressed: handleConfigure,
+                          title: 'Configure',
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 12.0,
+                          ),
+                        ),
                 ],
               )
             ],
@@ -129,8 +144,9 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
     return isValid;
   }
 
-  void handleConfigure() {
+  void handleConfigure() async {
     if (validateFields()) {
+      setState(() => isConfiguring = true);
       final slackConfig = {
         'token': tokenCtrl.text.trim(),
         'clientId': clientIdCtrl.text.trim(),
@@ -138,17 +154,26 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
         'signingSecret': signSecretCtrl.text.trim(),
       };
 
-      log('Slack Configuration: $slackConfig');
+      final result = await AiAssistantService.verifySlackBotConfigure(
+        context: context,
+        botToken: slackConfig['token'].toString(),
+        clientId: slackConfig['clientId'].toString(),
+        clientSecret: slackConfig['clientSecret'].toString(),
+        signingSecret: slackConfig['signingSecret'].toString(),
+      );
 
+      setState(() => isConfiguring = false);
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configuration saved successfully'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 1),
+        SnackBar(
+          content: result ? const Text('Configuration Saved Successfully') : const Text('Verify Slack Bot Failed'),
+          backgroundColor: result ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 1),
         ),
       );
 
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(result);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -162,14 +187,16 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
 }
 
 class _SlackCopyLinkSection extends StatelessWidget {
-  const _SlackCopyLinkSection();
+  const _SlackCopyLinkSection(this.assistantId);
+
+  final String assistantId;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '1. Slack Copy Link',
           style: TextStyle(
             fontSize: 18,
@@ -177,28 +204,25 @@ class _SlackCopyLinkSection extends StatelessWidget {
             color: AppColors.primaryColor,
           ),
         ),
-        SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 8),
+        const Text(
           'Copy the following content to your Slack app configuration page.',
           style: TextStyle(fontSize: 14),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         CopyLinkSection(
           title: 'OAuth2 Redirect URLs',
-          url:
-              'https://knowledge-api.jarvis.cx/kb-core/v1/bot-integration/slack/auth/00637faf-16ee-4533-9b88-6d030e22098f',
+          url: '$kbAPIUrl/kb-core/v1/bot-integration/slack/auth/$assistantId',
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         CopyLinkSection(
           title: 'Event Request URL',
-          url:
-              'https://knowledge-api.jarvis.cx/kb-core/v1/hook/slack/00637faf-16ee-4533-9b88-6d030e22098f',
+          url: '$kbAPIUrl/kb-core/v1/hook/slack/$assistantId',
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         CopyLinkSection(
           title: 'Slash Request URL',
-          url:
-              'https://knowledge-api.jarvis.cx/kb-core/v1/hook/slack/slash/00637faf-16ee-4533-9b88-6d030e22098f',
+          url: '$kbAPIUrl/kb-core/v1/hook/slack/slash/$assistantId',
         ),
       ],
     );

@@ -1,11 +1,18 @@
+import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/views/chatbot_ai/inner_pages/header_section_widget.dart';
 import 'package:final_project/widgets/copy_link_section_widget.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:flutter/material.dart';
 
 class MessengerConfigurePage extends StatefulWidget {
-  const MessengerConfigurePage({super.key});
+  const MessengerConfigurePage({
+    super.key,
+    required this.assistantId,
+  });
+
+  final String assistantId;
 
   @override
   State<MessengerConfigurePage> createState() => _MessengerConfigurePageState();
@@ -16,6 +23,7 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
   final TextEditingController botPageIdCtrl = TextEditingController();
   final TextEditingController botAppSecretCtrl = TextEditingController();
 
+  bool isConfiguring = false;
   Map<String, String?> fieldErrors = {
     'token': null,
     'botPageId': null,
@@ -45,14 +53,12 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const HeaderSection(
-                title:
-                    'Connect to Messenger Bots and chat with this bot in Messenger App',
+                title: 'Connect to Messenger Bots and chat with this bot in Messenger App',
                 description: 'How to obtain Messenger configurations?',
-                urlString:
-                    'https://jarvis.cx/help/knowledge-base/publish-bot/messenger',
+                urlString: 'https://jarvis.cx/help/knowledge-base/publish-bot/messenger',
               ),
               const SizedBox(height: 12),
-              const _MessengerCopyLinkSection(),
+              _MessengerCopyLinkSection(widget.assistantId),
               const SizedBox(height: 12),
               _MessengerInformation(
                 botTokenCtrl: botTokenCtrl,
@@ -74,14 +80,23 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  MaterialButtonCustomWidget(
-                    onPressed: handleConfigure,
-                    title: 'Configure',
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 12.0,
-                    ),
-                  ),
+                  isConfiguring
+                      ? Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          height: 16,
+                          width: 16,
+                          child: const CircularProgressIndicator(
+                            color: AppColors.primaryColor,
+                          ),
+                        )
+                      : MaterialButtonCustomWidget(
+                          onPressed: handleConfigure,
+                          title: 'Configure',
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 12.0,
+                          ),
+                        ),
                 ],
               )
             ],
@@ -119,26 +134,34 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
     return isValid;
   }
 
-  void handleConfigure() {
+  void handleConfigure() async {
     if (validateFields()) {
-      // final slackConfig = {
-      //   'token': tokenCtrl.text.trim(),
-      //   'clientId': clientIdCtrl.text.trim(),
-      //   'clientSecret': clientSecretCtrl.text.trim(),
-      //   'signingSecret': signSecretCtrl.text.trim(),
-      // };
-      
-      // print('Slack Configuration: $slackConfig');
-      
+      setState(() => isConfiguring = true);
+      final messengerConfig = {
+        'token': botTokenCtrl.text.trim(),
+        'botPageId': botPageIdCtrl.text.trim(),
+        'botAppSecret': botAppSecretCtrl.text.trim(),
+      };
+
+      final result = await AiAssistantService.verifyMessengerBotConfigure(
+        context: context,
+        botToken: messengerConfig['token'].toString(),
+        pageId: messengerConfig['botPageId'].toString(),
+        appSecret: messengerConfig['botAppSecret'].toString(),
+      );
+
+      setState(() => isConfiguring = false);
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configuration saved successfully'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 1),
+        SnackBar(
+          content: result ? const Text('Configuration Saved Successfully') : const Text('Verify Messenger Bot Failed'),
+          backgroundColor: result ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 1),
         ),
       );
 
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(result);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -152,14 +175,16 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
 }
 
 class _MessengerCopyLinkSection extends StatelessWidget {
-  const _MessengerCopyLinkSection();
+  const _MessengerCopyLinkSection(this.assistantId);
+
+  final String assistantId;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '1. Messenger Copy Link',
           style: TextStyle(
             fontSize: 18,
@@ -167,19 +192,18 @@ class _MessengerCopyLinkSection extends StatelessWidget {
             color: AppColors.primaryColor,
           ),
         ),
-        SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 8),
+        const Text(
           'Copy the following content to your Messenger app configuration page.',
           style: TextStyle(fontSize: 14),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         CopyLinkSection(
           title: 'Callback URL',
-          url:
-              'https://knowledge-api.jarvis.cx/kb-core/v1/bot-integration/slack/auth/00637faf-16ee-4533-9b88-6d030e22098f',
+          url: '$kbAPIUrl/kb-core/v1/hook/messenger/$assistantId',
         ),
-        SizedBox(height: 16),
-        CopyLinkSection(
+        const SizedBox(height: 16),
+        const CopyLinkSection(
           title: 'Verify Token',
           url: 'knowledge',
         ),
