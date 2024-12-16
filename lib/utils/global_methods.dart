@@ -1,4 +1,6 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Utils {
   Utils(this.context);
@@ -23,5 +25,27 @@ class Utils {
         return sheet;
       },
     );
+  }
+
+  static Future<void> launchSlackConfigUrl({required String urlString}) async {
+    try {
+      final Uri url = Uri.parse(urlString);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        throw 'Could not launch $urlString';
+      }
+    } catch (e) {
+      log('Error launching URL: $e');
+    }
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

@@ -66,19 +66,11 @@ class ChatbotAIItem extends StatelessWidget {
                         Text(
                             '${createdAt.month}/${createdAt.day}/${createdAt.year}'),
                         const Spacer(),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.star_border_outlined),
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outlined),
-                              onPressed: () {
-                                delete.call();
-                              },
-                            ),
-                          ],
+                        IconButton(
+                          icon: const Icon(Icons.delete_outlined),
+                          onPressed: () {
+                            delete.call();
+                          },
                         ),
                       ],
                     ),

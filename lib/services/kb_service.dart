@@ -9,6 +9,41 @@ import 'kb_authen_service.dart';
 import 'package:http/http.dart' as http;
 
 class KbService {
+  static Future<List<KbModel>?> getAllKnowledge(
+      {required BuildContext context}) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken'
+      };
+      var request = http.Request(
+          'GET',
+          Uri.parse(
+              '$kbAPIUrl/kb-core/v1/knowledge?q&order=DESC&order_field=createdAt&offset&limit=20'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log("Get All KB Success");
+        final result = jsonDecode(await response.stream.bytesToString());
+
+        return (result['data'] as List<dynamic>)
+            .map((item) => KbModel.fromJson(item))
+            .toList();
+      } else {
+        log("error: ${response.reasonPhrase}");
+        return null;
+      }
+    } catch (err) {
+      log('Error in Create Assistant: ${err.toString()}');
+      return null;
+    }
+  }
+
   static Future<KbModel?> createKnowledgeBase({
     required BuildContext context,
     required String kbName,
@@ -41,11 +76,43 @@ class KbService {
         log('result of creating knowledge base: $result');
         return KbModel.fromJson(jsonDecode(result));
       } else {
+        log('error create knowledge base');
         return null;
       }
     } catch (err) {
       log('Error in KB: ${err.toString()}');
       return null;
+    }
+  }
+
+  static Future<bool> deleteKnowledge({
+    required BuildContext context,
+    required String id,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken'
+      };
+      var request = http.Request(
+          'DELETE', Uri.parse('$kbAPIUrl/kb-core/v1/knowledge/$id'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('result of deleting kb: true');
+        return true;
+      } else {
+        log('result of deleting kb: false');
+        return false;
+      }
+    } catch (err) {
+      log('Error in Delete KB: ${err.toString()}');
+      return false;
     }
   }
 }
