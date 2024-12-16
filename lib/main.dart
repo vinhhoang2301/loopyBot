@@ -23,7 +23,7 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final authProvider = AuthProvider();
+  final authProvider = AuthenticationProvider();
   await authProvider.initializeAuth();
 
   runApp(
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log('is Authenticated: ${context.watch<AuthProvider>().isAuthenticated}');
+    log('is Authenticated: ${context.watch<AuthenticationProvider>().isAuthenticated}');
 
     return MaterialApp(
       title: 'Flutter Demo',
@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: AppColors.defaultTextColor),
         ),
       ),
-      initialRoute: context.watch<AuthProvider>().isAuthenticated
+      initialRoute: context.watch<AuthenticationProvider>().isAuthenticated
           ? AppRoutes.loginPage
           : AppRoutes.homePage,
       debugShowCheckedModeBanner: false,

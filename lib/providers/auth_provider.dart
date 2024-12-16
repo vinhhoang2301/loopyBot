@@ -2,7 +2,7 @@ import 'package:final_project/consts/key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class AuthProvider extends ChangeNotifier {
+class AuthenticationProvider extends ChangeNotifier {
   final _secureStorage = const FlutterSecureStorage();
   String? _refreshToken;
 
