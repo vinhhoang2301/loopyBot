@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/models/published_assistant_model.dart';
 import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/inner_pages/messenger_configure.dart';
@@ -24,6 +25,8 @@ class PublishAssistantPage extends StatefulWidget {
 }
 
 class _PublishAssistantPageState extends State<PublishAssistantPage> {
+  List<PublishedAssistant>? publishedAssistants = [];
+
   Map<String, bool> selectedPlatforms = {
     'slack': false,
     'telegram': false,
@@ -35,16 +38,35 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
     'messenger': false,
   };
 
+  bool isLoading = false;
   bool isPublishing = false;
-  String telegramConfigurations = '';
-  Map<String, String> slackConfigurations = {};
-  Map<String, String> messengerConfigurations = {};
+  String? preTelegramConfigurations;
+  Map<String, dynamic> preSlackConfigurations = {
+    'botToken': null,
+    'clientId': null,
+    'clientSecret': null,
+    'signingSecret': null,
+  };
+  Map<String, dynamic> preMessengerConfigurations = {
+    'botToken': null,
+    'pageId': null,
+    'appSecret': null,
+  };
+
+  String? curTelegramConfigurations;
+  Map<String, dynamic>? curSlackConfigurations = {};
+  Map<String, dynamic>? curMessengerConfigurations = {};
+
+  @override
+  void initState() {
+    fetchPublishedAssistants();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final paddingTop = MediaQuery.of(context).viewPadding.top;
-    bool hasSelectedPlatform =
-        selectedPlatforms.values.any((selected) => selected);
+    bool hasSelectedPlatform = selectedPlatforms.values.any((selected) => selected);
 
     return Scaffold(
       appBar: AppBar(
@@ -78,72 +100,120 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
               ),
             ),
             const SizedBox(height: 24),
-            _PublishAppItem(
-              name: 'Slack',
-              asset: 'assets/icon/slack.png',
-              isSelected: selectedPlatforms['slack'] ?? false,
-              onSelected: (value) {
-                setState(() => selectedPlatforms['slack'] = value);
-              },
-              onConfigure: () async {
-                slackConfigurations = await Utils.showBottomSheet(
-                  context,
-                  sheet: Padding(
-                    padding: EdgeInsets.only(top: paddingTop),
-                    child: SlackConfigurePage(assistantId: widget.assistantId),
-                  ),
-                  showFullScreen: true,
-                );
+            isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  )
+                : Column(
+                    children: [
+                      _PublishAppItem(
+                        name: 'Slack',
+                        asset: 'assets/icon/slack.png',
+                        isSelected: selectedPlatforms['slack'] ?? false,
+                        onSelected: (value) {
+                          setState(() => selectedPlatforms['slack'] = value);
+                        },
+                        onConfigure: () async {
+                          curSlackConfigurations = await Utils.showBottomSheet(
+                            context,
+                            sheet: Padding(
+                              padding: EdgeInsets.only(top: paddingTop),
+                              child: SlackConfigurePage(
+                                assistantId: widget.assistantId,
+                                configurations: preSlackConfigurations,
+                              ),
+                            ),
+                            showFullScreen: true,
+                          );
 
-                setState(() => configuredPlatforms['slack'] = true);
-              },
-              isConfigured: configuredPlatforms['slack'] ?? false,
-            ),
-            const SizedBox(height: 12),
-            _PublishAppItem(
-              name: 'Telegram',
-              asset: 'assets/icon/telegram.png',
-              isSelected: selectedPlatforms['telegram'] ?? false,
-              onSelected: (value) {
-                setState(() => selectedPlatforms['telegram'] = value);
-              },
-              onConfigure: () async {
-                telegramConfigurations = await Utils.showBottomSheet(
-                  context,
-                  sheet: Padding(
-                    padding: EdgeInsets.only(top: paddingTop),
-                    child: const TelegramConfigurePage(),
-                  ),
-                  showFullScreen: true,
-                );
+                          if (curSlackConfigurations?['token'] == null) {
+                            setState(() {
+                              configuredPlatforms['slack'] = false;
+                              preSlackConfigurations = {
+                                'botToken': null,
+                                'clientId': null,
+                                'clientSecret': null,
+                                'signingSecret': null,
+                              };
+                            });
+                          } else {
+                            setState(() => configuredPlatforms['slack'] = true);
+                          }
+                        },
+                        isConfigured: configuredPlatforms['slack'] ?? false,
+                      ),
+                      const SizedBox(height: 12),
+                      _PublishAppItem(
+                        name: 'Telegram',
+                        asset: 'assets/icon/telegram.png',
+                        isSelected: selectedPlatforms['telegram'] ?? false,
+                        onSelected: (value) {
+                          setState(() => selectedPlatforms['telegram'] = value);
+                        },
+                        onConfigure: () async {
+                          curTelegramConfigurations = await Utils.showBottomSheet(
+                            context,
+                            sheet: Padding(
+                              padding: EdgeInsets.only(top: paddingTop),
+                              child: TelegramConfigurePage(
+                                assistantId: widget.assistantId,
+                                configurations: preTelegramConfigurations,
+                              ),
+                            ),
+                            showFullScreen: true,
+                          );
 
-                setState(() => configuredPlatforms['telegram'] = true);
-              },
-              isConfigured: configuredPlatforms['telegram'] ?? false,
-            ),
-            const SizedBox(height: 12),
-            _PublishAppItem(
-              name: 'Messenger',
-              asset: 'assets/icon/messenger.png',
-              isSelected: selectedPlatforms['messenger'] ?? false,
-              onSelected: (value) {
-                setState(() => selectedPlatforms['messenger'] = value);
-              },
-              onConfigure: () async {
-                messengerConfigurations = await Utils.showBottomSheet(
-                  context,
-                  sheet: Padding(
-                    padding: EdgeInsets.only(top: paddingTop),
-                    child:
-                        MessengerConfigurePage(assistantId: widget.assistantId),
-                  ),
-                  showFullScreen: true,
-                );
+                          if (curMessengerConfigurations == null || curMessengerConfigurations!.isEmpty) {
+                            setState(() {
+                              preTelegramConfigurations = '';
+                              configuredPlatforms['telegram'] = false;
+                            });
+                          } else {
+                            setState(() => configuredPlatforms['telegram'] = true);
+                          }
+                        },
+                        isConfigured: configuredPlatforms['telegram'] ?? false,
+                      ),
+                      const SizedBox(height: 12),
+                      _PublishAppItem(
+                        name: 'Messenger',
+                        asset: 'assets/icon/messenger.png',
+                        isSelected: selectedPlatforms['messenger'] ?? false,
+                        onSelected: (value) {
+                          setState(() => selectedPlatforms['messenger'] = value);
+                        },
+                        onConfigure: () async {
+                          curMessengerConfigurations = await Utils.showBottomSheet(
+                            context,
+                            sheet: Padding(
+                              padding: EdgeInsets.only(top: paddingTop),
+                              child: MessengerConfigurePage(
+                                assistantId: widget.assistantId,
+                                configurations: preMessengerConfigurations,
+                              ),
+                            ),
+                            showFullScreen: true,
+                          );
 
-                setState(() => configuredPlatforms['messenger'] = true);
-              },
-              isConfigured: configuredPlatforms['messenger'] ?? false,
-            ),
+                          if (curMessengerConfigurations?['botToken'] == null) {
+                            setState(() {
+                              configuredPlatforms['messenger'] = false;
+                              preMessengerConfigurations = {
+                                'botToken': null,
+                                'pageId': null,
+                                'appSecret': null,
+                              };
+                            });
+                          } else {
+                            setState(() => configuredPlatforms['messenger'] = true);
+                          }
+                        },
+                        isConfigured: configuredPlatforms['messenger'] ?? false,
+                      ),
+                    ],
+                  )
           ],
         ),
       ),
@@ -191,6 +261,57 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
     );
   }
 
+  Future<void> fetchPublishedAssistants() async {
+    setState(() => isLoading = true);
+
+    publishedAssistants = await AiAssistantService.getConfigurations(
+      context: context,
+      assistantId: widget.assistantId,
+    );
+
+    if (publishedAssistants != null) {
+      for (final publishedAssistant in publishedAssistants!) {
+        final String type = publishedAssistant.type.toString();
+
+        setState(() {
+          configuredPlatforms[type.toString()] = true;
+
+          log('metadata: ${publishedAssistant.metadata}');
+          switch (type.toString()) {
+            case 'telegram':
+              final botToken = publishedAssistant.metadata?['botToken'];
+              preTelegramConfigurations = botToken;
+              break;
+            case 'slack':
+              final botToken = publishedAssistant.metadata?['botToken'];
+              final clientId = publishedAssistant.metadata?['clientId'];
+              final clientSecret = publishedAssistant.metadata?['clientSecret'];
+              final signingSecret = publishedAssistant.metadata?['signingSecret'];
+
+              preSlackConfigurations['botToken'] = botToken;
+              preSlackConfigurations['clientId'] = clientId;
+              preSlackConfigurations['clientSecret'] = clientSecret;
+              preSlackConfigurations['signingSecret'] = signingSecret;
+              break;
+            case 'messenger':
+              final botToken = publishedAssistant.metadata?['botToken'];
+              final pageId = publishedAssistant.metadata?['pageId'];
+              final appSecret = publishedAssistant.metadata?['appSecret'];
+
+              preMessengerConfigurations['botToken'] = botToken;
+              preMessengerConfigurations['pageId'] = pageId;
+              preMessengerConfigurations['appSecret'] = appSecret;
+              break;
+            default:
+              break;
+          }
+        });
+      }
+    }
+
+    setState(() => isLoading = false);
+  }
+
   Future<void> publishChatbot() async {
     List<Map<String, dynamic>> publishResults = [];
 
@@ -207,37 +328,47 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
         );
 
         return;
-      } else if (selectedPlatforms[platform]! &&
-          configuredPlatforms[platform]!) {
+      } else if (selectedPlatforms[platform]! && configuredPlatforms[platform]!) {
         setState(() => isPublishing = true);
 
         try {
-          bool success = false;
+          String? redirectUrl = '';
 
           switch (platform) {
             case 'slack':
-              success = await publishToSlack(widget.assistantId);
+              redirectUrl = await publishToSlack(widget.assistantId);
               break;
             case 'telegram':
-              success = await publishToTelegram(widget.assistantId);
+              redirectUrl = await publishToTelegram(widget.assistantId);
               break;
             case 'messenger':
-              success = await publishToMessenger(widget.assistantId);
+              redirectUrl = await publishToMessenger(widget.assistantId);
               break;
             default:
               log('Something went wrong when publishing. Platform: $platform');
               break;
           }
 
-          publishResults.add({
-            'platform': platform,
-            'success': success,
-          });
+          if (redirectUrl == null) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Publish $platform failed. Try again please.',
+                  ),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            }
+          } else {
+            publishResults.add({
+              'platform': platform,
+              'redirectUrl': redirectUrl,
+            });
+          }
         } catch (e) {
-          publishResults.add({
-            'platform': platform,
-            'success': false,
-          });
+          log('Failed when Publishing $platform, error: ${e.toString()}');
         }
 
         setState(() => isPublishing = false);
@@ -257,36 +388,36 @@ class _PublishAssistantPageState extends State<PublishAssistantPage> {
     }
   }
 
-  Future<bool> publishToSlack(String assistantId) async {
+  Future<String?> publishToSlack(String assistantId) async {
     final result = await AiAssistantService.publishSlackBot(
       context: context,
       assistantId: assistantId,
-      botToken: slackConfigurations['token'].toString(),
-      clientId: slackConfigurations['clientId'].toString(),
-      clientSecret: slackConfigurations['clientSecret'].toString(),
-      signingSecret: slackConfigurations['signingSecret'].toString(),
+      botToken: curSlackConfigurations!['token'].toString(),
+      clientId: curSlackConfigurations!['clientId'].toString(),
+      clientSecret: curSlackConfigurations!['clientSecret'].toString(),
+      signingSecret: curSlackConfigurations!['signingSecret'].toString(),
     );
 
     return result;
   }
 
-  Future<bool> publishToTelegram(String assistantId) async {
+  Future<String?> publishToTelegram(String assistantId) async {
     final result = await AiAssistantService.publishTelegramBot(
       context: context,
       assistantId: assistantId,
-      botToken: telegramConfigurations.toString(),
+      botToken: curTelegramConfigurations.toString(),
     );
 
     return result;
   }
 
-  Future<bool> publishToMessenger(String assistantId) async {
+  Future<String?> publishToMessenger(String assistantId) async {
     final result = await AiAssistantService.publishMessengerBot(
       context: context,
       assistantId: assistantId,
-      botToken: messengerConfigurations['token'].toString(),
-      pageId: messengerConfigurations['botPageId'].toString(),
-      appSecret: messengerConfigurations['botAppSecret'].toString(),
+      botToken: curMessengerConfigurations!['botToken'].toString(),
+      pageId: curMessengerConfigurations!['pageId'].toString(),
+      appSecret: curMessengerConfigurations!['appSecret'].toString(),
     );
 
     return result;
@@ -318,9 +449,7 @@ class _PublishAppItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primaryColor
-                : AppColors.backgroundColor2,
+            color: isSelected ? AppColors.primaryColor : AppColors.backgroundColor2,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -359,17 +488,13 @@ class _PublishAppItem extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: isConfigured
-                        ? Colors.green.shade100
-                        : AppColors.backgroundColor2,
+                    color: isConfigured ? Colors.green.shade100 : AppColors.backgroundColor2,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     isConfigured ? 'Verified' : 'Not Configure',
                     style: TextStyle(
-                      color: isConfigured
-                          ? Colors.green
-                          : AppColors.defaultTextColor,
+                      color: isConfigured ? Colors.green : AppColors.defaultTextColor,
                       fontSize: 12,
                     ),
                   ),

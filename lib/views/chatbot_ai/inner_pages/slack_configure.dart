@@ -10,15 +10,20 @@ class SlackConfigurePage extends StatefulWidget {
   const SlackConfigurePage({
     super.key,
     required this.assistantId,
+    required this.configurations,
   });
 
   final String assistantId;
+  final Map<String, dynamic> configurations;
 
   @override
   State<SlackConfigurePage> createState() => _SlackConfigurePageState();
 }
 
 class _SlackConfigurePageState extends State<SlackConfigurePage> {
+  late final Map<String, dynamic> _configurations;
+  late final bool _hasConfigurations;
+
   final TextEditingController tokenCtrl = TextEditingController();
   final TextEditingController clientIdCtrl = TextEditingController();
   final TextEditingController clientSecretCtrl = TextEditingController();
@@ -31,6 +36,19 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
     'clientSecret': null,
     'signSecret': null,
   };
+
+  @override
+  void initState() {
+    _configurations = widget.configurations;
+
+    tokenCtrl.text = _configurations['botToken'] ?? '';
+    clientIdCtrl.text = _configurations['clientId'] ?? '';
+    clientSecretCtrl.text = _configurations['clientSecret'] ?? '';
+    signSecretCtrl.text = _configurations['signingSecret'] ?? '';
+
+    _hasConfigurations = tokenCtrl.text.isNotEmpty;
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -56,9 +74,11 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const HeaderSection(
-                title: 'Connect to Slack Bots and chat with this bot in Slack App',
+                title:
+                    'Connect to Slack Bots and chat with this bot in Slack App',
                 description: 'How to obtain Slack configurations?',
-                urlString: 'https://jarvis.cx/help/knowledge-base/publish-bot/slack',
+                urlString:
+                    'https://jarvis.cx/help/knowledge-base/publish-bot/slack',
               ),
               const SizedBox(height: 12),
               _SlackCopyLinkSection(widget.assistantId),
@@ -86,21 +106,34 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
                   const SizedBox(width: 8),
                   isConfiguring
                       ? Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           height: 16,
                           width: 16,
-                          child: const CircularProgressIndicator(
-                            color: AppColors.primaryColor,
+                          child: CircularProgressIndicator(
+                            color: _hasConfigurations
+                                ? Colors.red
+                                : AppColors.primaryColor,
                           ),
                         )
-                      : MaterialButtonCustomWidget(
-                          onPressed: handleConfigure,
-                          title: 'Configure',
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 12.0,
-                          ),
-                        ),
+                      : _hasConfigurations
+                          ? MaterialButtonCustomWidget(
+                              onPressed: handleDisconnect,
+                              title: 'Disconnect',
+                              isDenied: true,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                            )
+                          : MaterialButtonCustomWidget(
+                              onPressed: handleConfigure,
+                              title: 'Configure',
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                            ),
                 ],
               )
             ],
@@ -167,7 +200,9 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: result ? const Text('Configuration Saved Successfully') : const Text('Verify Slack Bot Failed'),
+          content: result
+              ? const Text('Configuration Saved Successfully')
+              : const Text('Verify Slack Bot Failed'),
           backgroundColor: result ? Colors.green : Colors.red,
           duration: const Duration(seconds: 1),
         ),
@@ -184,6 +219,39 @@ class _SlackConfigurePageState extends State<SlackConfigurePage> {
           duration: Duration(seconds: 1),
         ),
       );
+    }
+  }
+
+  void handleDisconnect() async {
+    setState(() => isConfiguring = true);
+    final slackConfig = {
+      'token': null,
+      'clientId': null,
+      'clientSecret': null,
+      'signSecret': null,
+    };
+
+    final result = await AiAssistantService.disconnectBotIntegration(
+      context: context,
+      assistantId: widget.assistantId,
+      botType: 'slack',
+    );
+
+    setState(() => isConfiguring = false);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: result
+            ? const Text('Disconnect Bot Integration Successfully')
+            : const Text('Disconnect Bot Integration Failed'),
+        backgroundColor: result ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    if (result) {
+      Navigator.of(context).pop(slackConfig);
     }
   }
 }

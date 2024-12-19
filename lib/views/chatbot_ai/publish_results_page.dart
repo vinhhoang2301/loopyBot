@@ -1,5 +1,6 @@
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/utils/global_methods.dart';
+import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:flutter/material.dart';
 
 class PublishResultsPage extends StatelessWidget {
@@ -59,15 +60,16 @@ class PublishResultsPage extends StatelessWidget {
               shrinkWrap: true,
               itemBuilder: (context, index) {
                 final result = results[index];
-                final String platform =
-                    result['platform'].toString().capitalize();
-                final bool isSuccess = result['success'];
-        
+                final String platform = result['platform'].toString().capitalize();
+                final String? redirectUrl = result['redirectUrl'];
+                final isSuccess = redirectUrl != null;
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: _PublishResultItem(
                     name: platform,
                     isSuccess: isSuccess,
+                    redirectUrl: redirectUrl,
                   ),
                 );
               },
@@ -98,10 +100,12 @@ class _PublishResultItem extends StatelessWidget {
   const _PublishResultItem({
     required this.name,
     required this.isSuccess,
+    required this.redirectUrl,
   });
 
   final String name;
   final bool isSuccess;
+  final String? redirectUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +173,17 @@ class _PublishResultItem extends StatelessWidget {
               ),
             ),
           ),
+          if (redirectUrl != null)
+            MaterialButtonCustomWidget(
+              onPressed: () async {
+                await Utils.launchSlackConfigUrl(urlString: redirectUrl!);
+              },
+              title: 'Open',
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 4,
+              ),
+            ),
         ],
       ),
     );
