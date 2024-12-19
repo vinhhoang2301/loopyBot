@@ -36,11 +36,12 @@ class KBAuthService {
 
         _cachedAccessToken = kbAccessToken;
 
-        Provider.of<KBAuthProvider>(context, listen: false).setTokens(
+        await Provider.of<KBAuthProvider>(context, listen: false).setTokens(
           refreshToken: kbRefreshToken,
         );
 
         log('Sign In KB From External Client Successfully');
+        log('Refresh Token of KB: $kbRefreshToken');
         log('Access Token of KB: $accessToken');
       } else {
         log('Sign In KB From External Client Failed: $statusCode');
@@ -72,7 +73,7 @@ class KBAuthService {
       http.StreamedResponse response = await request.send();
 
       final statusCode = response.statusCode;
-      log('Refresh Token: ' + refreshToken!);
+      log('Refresh Token: $refreshToken');
 
       if (statusCode == 200 || statusCode == 201) {
         final result = jsonDecode(await response.stream.bytesToString());

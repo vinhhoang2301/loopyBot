@@ -103,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                             _validateUserInfo();
 
                             if (emailError == null && passwordError == null) {
-                              signIn(
+                              await signIn(
                                 context,
                                 emailController.text,
                                 passwordController.text,
@@ -254,8 +254,9 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
 
-      if (result.isEmpty)
+      if (result.isEmpty) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
+      }
     }
 
     setState(() => isLoading = false);

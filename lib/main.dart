@@ -8,13 +8,13 @@ import 'package:final_project/views/chatbot_ai/chatbot_ai_page.dart';
 import 'package:final_project/views/chatbot_ai/preview_chatbot_ai_page.dart';
 import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:final_project/views/home_page.dart';
-import 'package:final_project/views/knowledge_base/kb_details_page.dart';
 import 'package:final_project/views/knowledge_base/kb_page.dart';
 import 'package:final_project/views/authentication/login_page.dart';
 import 'package:final_project/views/authentication/reset_password.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
 import 'package:final_project/views/user_info/update_account.dart';
 import 'package:final_project/views/user_info/user_profile.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/views/authentication/register_page.dart';
 import 'package:final_project/views/authentication/login_gmail_page.dart';
@@ -22,8 +22,9 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-  final authProvider = AuthProvider();
+  final authProvider = AuthenticationProvider();
   await authProvider.initializeAuth();
 
   runApp(
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log('is Authenticated: ${context.watch<AuthProvider>().isAuthenticated}');
+    log('is Authenticated: ${context.watch<AuthenticationProvider>().isAuthenticated}');
 
     return MaterialApp(
       title: 'Flutter Demo',
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: AppColors.defaultTextColor),
         ),
       ),
-      initialRoute: context.watch<AuthProvider>().isAuthenticated
+      initialRoute: context.watch<AuthenticationProvider>().isAuthenticated
           ? AppRoutes.loginPage
           : AppRoutes.homePage,
       debugShowCheckedModeBanner: false,

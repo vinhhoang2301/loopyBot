@@ -10,6 +10,7 @@ class MaterialButtonCustomWidget extends StatelessWidget {
     this.buttonStyle,
     this.content,
     this.isApproved = true,
+    this.isDenied = false,
   });
 
   final String? title;
@@ -19,6 +20,7 @@ class MaterialButtonCustomWidget extends StatelessWidget {
   final EdgeInsets? padding;
   final BoxDecoration? buttonStyle;
   final bool? isApproved;
+  final bool? isDenied;
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +37,11 @@ class MaterialButtonCustomWidget extends StatelessWidget {
         padding: padding,
         decoration: buttonStyle ??
             BoxDecoration(
-              color: isApproved == true
-                  ? AppColors.primaryColor
-                  : AppColors.deniedColor,
+              color: isDenied == true
+                  ? Colors.red
+                  : isApproved == true
+                      ? AppColors.primaryColor
+                      : AppColors.deniedColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
         child: Center(
