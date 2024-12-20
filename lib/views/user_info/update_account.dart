@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
-import 'package:flutter/material.dart';
-
+import 'package:final_project/services/subscription_service.dart';
+import 'dart:developer';
 class UpdateAccount extends StatelessWidget {
   const UpdateAccount({super.key});
 
@@ -36,13 +37,19 @@ class UpdateAccount extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               MaterialButtonCustomWidget(
-                onPressed: () {},
+                  onPressed: () async {
+                  log('Subscribe button pressed');
+                  final subscriptionService = SubscriptionService();
+                  await subscriptionService.subscribeToService(context);
+                },
                 title: 'Subscribe',
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
               ),
               const SizedBox(height: 16),
               MaterialButtonCustomWidget(
-                onPressed: () {},
+                onPressed: () async { 
+  
+                },
                 title: 'Restore Subscription',
                 isApproved: false,
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
