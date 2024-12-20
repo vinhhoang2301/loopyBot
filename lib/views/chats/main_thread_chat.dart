@@ -15,7 +15,7 @@ import 'package:final_project/widgets/typing_indicator_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
-import 'package:camera/camera.dart';
+// import 'package:camera/camera.dart';
 
 class MainThreadChatPage extends StatefulWidget {
   const MainThreadChatPage({
@@ -45,7 +45,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   int availableTokens = 0;
   bool isLoading = false;
   bool isTyping = false;
-  CameraController? _cameraController;
+  // CameraController? _cameraController;
   XFile? _imageFile;
 
   @override
@@ -80,7 +80,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   void dispose() {
     _conversationNode.dispose();
     _chatController.dispose();
-    _cameraController?.dispose();
+    // _cameraController?.dispose();
     super.dispose();
   }
 
@@ -136,41 +136,41 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     });
   }
 
-  Future<void> _initializeCamera() async {
-  try {
-    final cameras = await availableCameras();
-    final firstCamera = cameras.first;
+  // Future<void> _initializeCamera() async {
+  //   try {
+  //     final cameras = await availableCameras();
+  //     final firstCamera = cameras.first;
 
-    _cameraController = CameraController(
-      firstCamera,
-      ResolutionPreset.high,
-    );
+  //     _cameraController = CameraController(
+  //       firstCamera,
+  //       ResolutionPreset.high,
+  //     );
 
-    await _cameraController?.initialize();
-  } catch (e) {
-    print('Error initializing camera: $e');
-  }
-}
+  //     await _cameraController?.initialize();
+  //   } catch (e) {
+  //     print('Error initializing camera: $e');
+  //   }
+  // }
 
-  Future<void> _takePicture() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return;
-    }
+  // Future<void> _takePicture() async {
+  //   if (_cameraController == null || !_cameraController!.value.isInitialized) {
+  //     return;
+  //   }
 
-    if (_cameraController!.value.isTakingPicture) {
-      return;
-    }
+  //   if (_cameraController!.value.isTakingPicture) {
+  //     return;
+  //   }
 
-    try {
-      final image = await _cameraController!.takePicture();
-      setState(() {
-        _imageFile = image;
-      });
-      await _sendMessage(_conversationId, _imageFile);
-    } catch (e) {
-      print(e);
-    }
-  }
+  //   try {
+  //     final image = await _cameraController!.takePicture();
+  //     setState(() {
+  //       _imageFile = image;
+  //     });
+  //     await _sendMessage(_conversationId, _imageFile);
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -359,8 +359,8 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                                 icon: const Icon(Icons.camera_alt,
                                     color: AppColors.primaryColor),
                                 onPressed: () async {
-                                  await _initializeCamera();
-                                  await _takePicture();
+                                  // await _initializeCamera();
+                                  // await _takePicture();
                                 },
                               ),
                               IconButton(

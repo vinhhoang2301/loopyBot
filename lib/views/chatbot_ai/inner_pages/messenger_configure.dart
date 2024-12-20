@@ -10,15 +10,19 @@ class MessengerConfigurePage extends StatefulWidget {
   const MessengerConfigurePage({
     super.key,
     required this.assistantId,
+    required this.configurations,
   });
 
   final String assistantId;
+  final Map<String, dynamic> configurations;
 
   @override
   State<MessengerConfigurePage> createState() => _MessengerConfigurePageState();
 }
 
 class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
+  late final bool hasConfigurations;
+
   final TextEditingController botTokenCtrl = TextEditingController();
   final TextEditingController botPageIdCtrl = TextEditingController();
   final TextEditingController botAppSecretCtrl = TextEditingController();
@@ -29,6 +33,16 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
     'botPageId': null,
     'botAppSecret': null,
   };
+
+  @override
+  void initState() {
+    botTokenCtrl.text = widget.configurations['botToken'] ?? '';
+    botPageIdCtrl.text = widget.configurations['pageId'] ?? '';
+    botAppSecretCtrl.text = widget.configurations['appSecret'] ?? '';
+
+    hasConfigurations = botTokenCtrl.text.isNotEmpty;
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -85,21 +99,35 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
                   isConfiguring
                       ? Container(
                           margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           height: 16,
                           width: 16,
-                          child: const CircularProgressIndicator(
-                            color: AppColors.primaryColor,
+                          child: CircularProgressIndicator(
+                            color: hasConfigurations
+                                ? Colors.red
+                                : AppColors.primaryColor,
                           ),
                         )
-                      : MaterialButtonCustomWidget(
-                          onPressed: handleConfigure,
-                          title: 'Configure',
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 12.0,
-                          ),
-                        ),
+                      : hasConfigurations
+                          ? MaterialButtonCustomWidget(
+                              onPressed: handleDisconnect,
+                              title: 'Disconnect',
+                              isDenied: true,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                            )
+                          : MaterialButtonCustomWidget(
+                              onPressed: handleConfigure,
+                              title: 'Configure',
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                            ),
                 ],
               )
             ],
@@ -141,16 +169,16 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
     if (validateFields()) {
       setState(() => isConfiguring = true);
       final messengerConfig = {
-        'token': botTokenCtrl.text.trim(),
-        'botPageId': botPageIdCtrl.text.trim(),
-        'botAppSecret': botAppSecretCtrl.text.trim(),
+        'botToken': botTokenCtrl.text.trim(),
+        'pageId': botPageIdCtrl.text.trim(),
+        'appSecret': botAppSecretCtrl.text.trim(),
       };
 
       final result = await AiAssistantService.verifyMessengerBotConfigure(
         context: context,
-        botToken: messengerConfig['token'].toString(),
-        pageId: messengerConfig['botPageId'].toString(),
-        appSecret: messengerConfig['botAppSecret'].toString(),
+        botToken: messengerConfig['botToken'].toString(),
+        pageId: messengerConfig['pageId'].toString(),
+        appSecret: messengerConfig['appSecret'].toString(),
       );
 
       setState(() => isConfiguring = false);
@@ -177,6 +205,38 @@ class _MessengerConfigurePageState extends State<MessengerConfigurePage> {
           duration: Duration(seconds: 1),
         ),
       );
+    }
+  }
+
+  void handleDisconnect() async {
+    setState(() => isConfiguring = true);
+    final messengerConfig = <String, dynamic>{
+      'botToken': null,
+      'pageId': null,
+      'appSecret': null,
+    };
+
+    final result = await AiAssistantService.disconnectBotIntegration(
+      context: context,
+      assistantId: widget.assistantId,
+      botType: 'messenger',
+    );
+
+    setState(() => isConfiguring = false);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: result
+            ? const Text('Disconnect Bot Integration Successfully')
+            : const Text('Disconnect Bot Integration Failed'),
+        backgroundColor: result ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    if (result) {
+      Navigator.of(context).pop(messengerConfig);
     }
   }
 }

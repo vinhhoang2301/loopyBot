@@ -5,17 +5,35 @@ import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:flutter/material.dart';
 
 class TelegramConfigurePage extends StatefulWidget {
-  const TelegramConfigurePage({super.key});
+  const TelegramConfigurePage({
+    super.key,
+    required this.assistantId,
+    required this.configurations,
+  });
+
+  final String assistantId;
+  final String? configurations;
 
   @override
   State<TelegramConfigurePage> createState() => _TelegramConfigurePageState();
 }
 
 class _TelegramConfigurePageState extends State<TelegramConfigurePage> {
+  late final String _configurations;
+  late final bool _hasConfigurations;
+
   final TextEditingController tokenCtrl = TextEditingController();
 
   String? errorText;
   bool isConfiguring = false;
+
+  @override
+  void initState() {
+    _configurations = widget.configurations ?? '';
+    tokenCtrl.text = _configurations;
+    _hasConfigurations = tokenCtrl.text.isNotEmpty;
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -69,18 +87,30 @@ class _TelegramConfigurePageState extends State<TelegramConfigurePage> {
                               horizontal: 16, vertical: 8),
                           height: 16,
                           width: 16,
-                          child: const CircularProgressIndicator(
-                            color: AppColors.primaryColor,
+                          child: CircularProgressIndicator(
+                            color: _hasConfigurations
+                                ? Colors.red
+                                : AppColors.primaryColor,
                           ),
                         )
-                      : MaterialButtonCustomWidget(
-                          onPressed: handleConfigure,
-                          title: 'Configure',
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 12.0,
-                          ),
-                        ),
+                      : _hasConfigurations
+                          ? MaterialButtonCustomWidget(
+                              onPressed: handleDisconnect,
+                              title: 'Disconnect',
+                              isDenied: true,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                            )
+                          : MaterialButtonCustomWidget(
+                              onPressed: handleConfigure,
+                              title: 'Configure',
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                            ),
                 ],
               )
             ],
@@ -136,6 +166,33 @@ class _TelegramConfigurePageState extends State<TelegramConfigurePage> {
           duration: Duration(seconds: 1),
         ),
       );
+    }
+  }
+
+  void handleDisconnect() async {
+    setState(() => isConfiguring = true);
+
+    final result = await AiAssistantService.disconnectBotIntegration(
+      context: context,
+      assistantId: widget.assistantId,
+      botType: 'telegram',
+    );
+
+    setState(() => isConfiguring = false);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: result
+            ? const Text('Disconnect Bot Integration Successfully')
+            : const Text('Disconnect Bot Integration Failed'),
+        backgroundColor: result ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    if (result) {
+      Navigator.of(context).pop('');
     }
   }
 }

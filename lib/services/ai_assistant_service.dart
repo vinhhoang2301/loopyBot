@@ -4,12 +4,81 @@ import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/key.dart';
 import 'package:final_project/models/ai_assistant_model.dart';
 import 'package:final_project/models/kb_model.dart';
+import 'package:final_project/models/published_assistant_model.dart';
 import 'package:final_project/services/kb_authen_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
 class AiAssistantService {
-  static Future<bool> publishMessengerBot({
+  static Future<bool> disconnectBotIntegration({
+    required BuildContext context,
+    required String assistantId,
+    required String botType,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken'
+      };
+      var request = http.Request(
+          'DELETE',
+          Uri.parse(
+              '$kbAPIUrl/kb-core/v1/bot-integration/$assistantId/$botType'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        log('error: ${response.statusCode}');
+        return false;
+      }
+    } catch (err) {
+      log('Error in Disconnect Bot Integration: ${err.toString()}');
+      return false;
+    }
+  }
+
+  static Future<List<PublishedAssistant>?> getConfigurations({
+    required BuildContext context,
+    required String assistantId,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken'
+      };
+      var request = http.Request(
+          'GET',
+          Uri.parse(
+              '$kbAPIUrl/kb-core/v1/bot-integration/$assistantId/configurations'));
+
+      request.headers.addAll(headers);
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = jsonDecode(await response.stream.bytesToString());
+
+        return (result as List<dynamic>)
+            .map((item) => PublishedAssistant.fromJson(item))
+            .toList();
+      } else {
+        log('error: ${response.statusCode}');
+        return null;
+      }
+    } catch (err) {
+      log('Error in Get Configurations Bot: ${err.toString()}');
+      return null;
+    }
+  }
+
+  static Future<String?> publishMessengerBot({
     required BuildContext context,
     required String assistantId,
     required String botToken,
@@ -28,24 +97,26 @@ class AiAssistantService {
           'POST',
           Uri.parse(
               '$kbAPIUrl/kb-core/v1/bot-integration/messenger/publish/$assistantId'));
+
       request.body = json.encode(
           {"botToken": botToken, "pageId": pageId, "appSecret": appSecret});
       request.headers.addAll(headers);
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
+        final result = jsonDecode(await response.stream.bytesToString());
+        return result['redirect'];
       } else {
         log('error: ${response.statusCode}');
-        return false;
+        return null;
       }
     } catch (err) {
       log('Error in Publish Messenger Bot: ${err.toString()}');
-      return false;
+      return null;
     }
   }
 
-  static Future<bool> publishSlackBot({
+  static Future<String?> publishSlackBot({
     required BuildContext context,
     required String assistantId,
     required String botToken,
@@ -65,6 +136,7 @@ class AiAssistantService {
           'POST',
           Uri.parse(
               '$kbAPIUrl/kb-core/v1/bot-integration/slack/publish/$assistantId'));
+
       request.body = json.encode({
         "botToken": botToken,
         "clientId": clientId,
@@ -75,18 +147,19 @@ class AiAssistantService {
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
+        final result = jsonDecode(await response.stream.bytesToString());
+        return result['redirect'];
       } else {
         log('error: ${response.statusCode}');
-        return false;
+        return null;
       }
     } catch (err) {
       log('Error in Publish Slack Bot: ${err.toString()}');
-      return false;
+      return null;
     }
   }
 
-  static Future<bool> publishTelegramBot({
+  static Future<String?> publishTelegramBot({
     required BuildContext context,
     required String assistantId,
     required String botToken,
@@ -103,19 +176,21 @@ class AiAssistantService {
           'POST',
           Uri.parse(
               '$kbAPIUrl/kb-core/v1/bot-integration/telegram/publish/$assistantId'));
+
       request.body = json.encode({"botToken": botToken});
       request.headers.addAll(headers);
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
+        final result = jsonDecode(await response.stream.bytesToString());
+        return result['redirect'];
       } else {
         log('error: ${response.statusCode}');
-        return false;
+        return null;
       }
     } catch (err) {
       log('Error in Publish Telegram Bot: ${err.toString()}');
-      return false;
+      return null;
     }
   }
 
@@ -136,10 +211,10 @@ class AiAssistantService {
           'POST',
           Uri.parse(
               '$kbAPIUrl/kb-core/v1/bot-integration/messenger/validation'));
+
       request.body = json.encode(
           {"botToken": botToken, "pageId": pageId, "appSecret": appSecret});
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -170,6 +245,7 @@ class AiAssistantService {
       };
       var request = http.Request('POST',
           Uri.parse('$kbAPIUrl/kb-core/v1/bot-integration/slack/validation'));
+
       request.body = json.encode({
         "botToken": botToken,
         "clientId": clientId,
@@ -177,7 +253,6 @@ class AiAssistantService {
         "signingSecret": signingSecret
       });
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -244,7 +319,6 @@ class AiAssistantService {
               '$kbAPIUrl/kb-core/v1/ai-assistant/$assistantId/knowledges/$knowledgeId'));
 
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -277,7 +351,6 @@ class AiAssistantService {
               '$kbAPIUrl/kb-core/v1/ai-assistant/$assistantId/knowledges/$knowledgeId'));
 
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -309,7 +382,6 @@ class AiAssistantService {
               '$kbAPIUrl/kb-core/v1/ai-assistant/$assistantId/knowledges?q&order=DESC&order_field=createdAt&offset&limit=20'));
 
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -345,8 +417,8 @@ class AiAssistantService {
           'GET',
           Uri.parse(
               '$kbAPIUrl/kb-core/v1/ai-assistant?q&order=DESC&order_field=createdAt&offset&limit=20&is_favorite&is_published'));
-      request.headers.addAll(headers);
 
+      request.headers.addAll(headers);
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -385,13 +457,13 @@ class AiAssistantService {
       };
       var request =
           http.Request('POST', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant'));
+
       request.body = json.encode({
         "assistantName": assistantName,
         "instructions": instructions,
         "description": description
       });
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -423,7 +495,6 @@ class AiAssistantService {
           'DELETE', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
 
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -453,7 +524,6 @@ class AiAssistantService {
           'GET', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
 
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -487,13 +557,13 @@ class AiAssistantService {
       };
       var request = http.Request(
           'PATCH', Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$id'));
+
       request.body = json.encode({
         "assistantName": assistantName,
         "instructions": assistantIns,
         "description": assistantDes
       });
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -524,13 +594,13 @@ class AiAssistantService {
       };
       var request = http.Request('POST',
           Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/$assistantId/ask'));
+
       request.body = json.encode({
         "message": msg,
         "openAiThreadId": openAiThreadId,
         "additionalInstruction": additionalIns
       });
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -560,10 +630,10 @@ class AiAssistantService {
       };
       var request = http.Request('POST',
           Uri.parse('$kbAPIUrl/kb-core/v1/ai-assistant/thread/playground'));
+
       request.body =
           json.encode({"assistantId": assistantId, "firstMessage": ""});
       request.headers.addAll(headers);
-
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:final_project/consts/api.dart';
-import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/consts/key.dart';
 import 'package:final_project/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
