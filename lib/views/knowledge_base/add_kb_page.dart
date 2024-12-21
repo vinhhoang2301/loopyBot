@@ -6,6 +6,7 @@ import 'package:final_project/services/kb_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../consts/app_routes.dart';
 import '../../services/authen_service.dart';
 import '../../services/kb_authen_service.dart';
 import '../../widgets/material_button_custom_widget.dart';
@@ -33,6 +34,7 @@ class _AddKBPageState extends State<AddKBPage> {
 
     if (result != null) {
       log('Success');
+      Navigator.of(context).pushReplacementNamed(AppRoutes.knowledgeBase);
     } else {
       log('Failed');
     }
