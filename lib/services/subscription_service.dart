@@ -30,4 +30,50 @@ class SubscriptionService {
       log('Response body: $responseBody');
     }
   }
+  Future<void> getSubscriptionUsage(BuildContext context) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken',
+    };
+    var request = http.Request('GET', Uri.parse('https://yourapi.com/api/v1/subscriptions/me'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      String responseBody = await response.stream.bytesToString();
+      print(responseBody);
+
+      // Parse the response if needed
+      var jsonResponse = jsonDecode(responseBody);
+      // Handle the parsed response
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+  Future<void> getSubscriptionToken(BuildContext context) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+    var headers = {
+      'x-jarvis-guid': '',
+      'Authorization': 'Bearer $accessToken',
+    };
+    var request = http.Request('GET', Uri.parse('https://yourapi.com/api/v1/tokens/usage'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      String responseBody = await response.stream.bytesToString();
+      print(responseBody);
+
+      // Parse the response if needed
+      var jsonResponse = jsonDecode(responseBody);
+      // Handle the parsed response
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
 }

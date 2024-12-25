@@ -19,10 +19,13 @@ import 'package:flutter/material.dart';
 import 'package:final_project/views/authentication/register_page.dart';
 import 'package:final_project/views/authentication/login_gmail_page.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart'; // Ensure this file is correctly configured
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   final authProvider = AuthenticationProvider();
   await authProvider.initializeAuth();
