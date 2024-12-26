@@ -30,13 +30,13 @@ class SubscriptionService {
       log('Response body: $responseBody');
     }
   }
-  Future<void> getSubscriptionUsage(BuildContext context) async {
+  Future<Map<String, dynamic>?> getSubscriptionUsage(BuildContext context) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
     var headers = {
       'x-jarvis-guid': '',
       'Authorization': 'Bearer $accessToken',
     };
-    var request = http.Request('GET', Uri.parse('https://yourapi.com/api/v1/subscriptions/me'));
+    var request = http.Request('GET', Uri.parse('$baseUrl/api/v1/subscriptions/me'));
 
     request.headers.addAll(headers);
 
@@ -44,22 +44,23 @@ class SubscriptionService {
 
     if (response.statusCode == 200) {
       String responseBody = await response.stream.bytesToString();
-      print(responseBody);
+      log(responseBody);
 
-      // Parse the response if needed
+      // Parse the response
       var jsonResponse = jsonDecode(responseBody);
-      // Handle the parsed response
+      return jsonResponse;
     } else {
-      print(response.reasonPhrase);
+      log(response.reasonPhrase ?? 'Failed to get subscription usage');
+      return null;
     }
   }
-  Future<void> getSubscriptionToken(BuildContext context) async {
+  Future<Map<String, dynamic>?> getSubscriptionToken(BuildContext context) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
     var headers = {
       'x-jarvis-guid': '',
       'Authorization': 'Bearer $accessToken',
     };
-    var request = http.Request('GET', Uri.parse('https://yourapi.com/api/v1/tokens/usage'));
+    var request = http.Request('GET', Uri.parse('$baseUrl/api/v1/tokens/usage'));
 
     request.headers.addAll(headers);
 
@@ -67,13 +68,11 @@ class SubscriptionService {
 
     if (response.statusCode == 200) {
       String responseBody = await response.stream.bytesToString();
-      print(responseBody);
-
-      // Parse the response if needed
       var jsonResponse = jsonDecode(responseBody);
-      // Handle the parsed response
+      return jsonResponse;
     } else {
       print(response.reasonPhrase);
+      return null;
     }
   }
 }

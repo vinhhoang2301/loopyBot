@@ -3,11 +3,48 @@ import 'package:final_project/consts/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:final_project/services/subscription_service.dart';
 
 import '../../consts/app_routes.dart';
 
-class UserProfile extends StatelessWidget {
+class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
+  @override
+  _UserProfileState createState() => _UserProfileState();
+}
+
+class _UserProfileState extends State<UserProfile> {
+  int availableTokens = 0;
+  int totalTokens = 0;
+  Map<String, dynamic>? subscriptionData;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTokenUsage();
+    _fetchSubscriptionData();
+  }
+
+  Future<void> _fetchTokenUsage() async {
+    SubscriptionService subscriptionService = SubscriptionService();
+    var tokenData = await subscriptionService.getSubscriptionToken(context);
+    if (tokenData != null) {
+      setState(() {
+        availableTokens = tokenData['availableTokens'];
+        totalTokens = tokenData['totalTokens'];
+      });
+    }
+  }
+
+  Future<void> _fetchSubscriptionData() async {
+    SubscriptionService subscriptionService = SubscriptionService();
+    var data = await subscriptionService.getSubscriptionUsage(context);
+    if (data != null) {
+      setState(() {
+        subscriptionData = data;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +67,7 @@ class UserProfile extends StatelessWidget {
                     color: Colors.blue[50], // Background color of the container
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Token Usage',
@@ -45,15 +82,43 @@ class UserProfile extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 8),
-                      LinearProgressIndicator(value: 0.5, color: Colors.blue),
+                      LinearProgressIndicator(
+                        value: totalTokens > 0 ? availableTokens / totalTokens : 0,
+                        color: Colors.blue,
+                      ),
                       SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('40'),
-                          Text('50'),
+                          Text('$availableTokens'),
+                          Text('$totalTokens'),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                  color: Colors.blue[50], // Background color of the container
+                  borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Your subscription:',
+                      style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                      if (subscriptionData != null) ...[
+                        Text('Name: ${subscriptionData!['name']}'),
+                        Text('Daily Tokens: ${subscriptionData!['dailyTokens']}'),
+                        Text('Monthly Tokens: ${subscriptionData!['monthlyTokens']}'),
+                        Text('Annually Tokens: ${subscriptionData!['annuallyTokens']}'),
+                      ] else ...[
+                        Text('Loading subscription data...'),
+                      ],
                     ],
                   ),
                 ),

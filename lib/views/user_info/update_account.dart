@@ -46,10 +46,16 @@ class UpdateAccount extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               MaterialButtonCustomWidget(
-                onPressed: () async { 
-                  final subscriptionService = SubscriptionService();
-                  await subscriptionService.getSubscriptionUsage(context);
-                  await subscriptionService.getSubscriptionToken(context);
+                onPressed: () async {
+                  SubscriptionService subscriptionService = SubscriptionService();
+                  var subscriptionData = await subscriptionService.getSubscriptionUsage(context);
+                  if (subscriptionData != null) {
+                    // Handle the subscription data as needed
+                    print('Subscription data: $subscriptionData');
+                  } else {
+                    // Handle the error case
+                    print('Failed to restore subscription');
+                  }
                 },
                 title: 'Restore Subscription',
                 isApproved: false,
