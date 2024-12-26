@@ -1,17 +1,62 @@
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/models/unit_model.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/knowledge_base/add_unit_kb_page.dart';
 import 'package:final_project/widgets/kb_details_item.dart';
 import 'package:flutter/material.dart';
 
+import '../empty_page.dart';
+
 class KbDetailsPage extends StatefulWidget {
-  const KbDetailsPage({super.key});
+  const KbDetailsPage({
+    super.key,
+    required this.id,
+  });
+
+  final String id;
 
   @override
   State<KbDetailsPage> createState() => _KbDetailsPageState();
 }
 
 class _KbDetailsPageState extends State<KbDetailsPage> {
+  late final String _kbId;
+  List<UnitModel>? allUnit = [];
+
+  @override
+  void initState() {
+    _kbId = widget.id;
+    super.initState();
+  }
+
+  Widget _buildContent() {
+    if (allUnit == null) {
+      return const EmptyPage(content: 'No Unit. Let Create It');
+    }
+
+    return ListView.builder(
+      itemCount: allUnit!.length,
+      itemBuilder: (context, index) {
+        final unitItem = allUnit![index];
+
+        return unitItem.id != null
+            ? KbDetailsItem(
+                id: unitItem.id!,
+                updatedAt: unitItem.updatedAt!,
+                unitName: unitItem.name!,
+                status: unitItem.status!,
+              )
+            : const SizedBox(
+                height: 40,
+                child: Text(
+                  'Failed to get Unit',
+                  style: TextStyle(color: Colors.red),
+                ),
+              );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,26 +67,18 @@ class _KbDetailsPageState extends State<KbDetailsPage> {
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.inverseTextColor,
       ),
-      body: ListView(
-        children: const [
-          KbDetailsItem(),
-          KbDetailsItem(),
-          KbDetailsItem(),
-          KbDetailsItem(),
-          KbDetailsItem(),
-          KbDetailsItem(),
-          KbDetailsItem(),
-        ],
-      ),
+      body: _buildContent(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Utils.showBottomSheet(
             context,
-            sheet: const AddUnitKBPage(),
+            sheet: AddUnitKBPage(
+              id: _kbId,
+            ),
             showFullScreen: true,
           );
         },
-        tooltip: 'Add Knowledge Base',
+        tooltip: 'Add Unit',
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.inverseTextColor,
         shape: const CircleBorder(),

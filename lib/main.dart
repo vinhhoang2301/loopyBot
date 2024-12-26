@@ -8,6 +8,7 @@ import 'package:final_project/views/chatbot_ai/chatbot_ai_page.dart';
 import 'package:final_project/views/chatbot_ai/preview_chatbot_ai_page.dart';
 import 'package:final_project/views/chats/main_thread_chat.dart';
 import 'package:final_project/views/home_page.dart';
+import 'package:final_project/views/knowledge_base/kb_details_page.dart';
 import 'package:final_project/views/knowledge_base/kb_page.dart';
 import 'package:final_project/views/authentication/login_page.dart';
 import 'package:final_project/views/authentication/reset_password.dart';
@@ -67,6 +68,13 @@ class MyApp extends StatelessWidget {
             builder: (context) => PreviewChatbot(id: id ?? ''),
             settings: settings,
           );
+        } else if (settings.name?.startsWith('${AppRoutes.kbDetails}/') ??
+            false) {
+          final id = settings.name?.split('/').last;
+          return MaterialPageRoute(
+            builder: (context) => KbDetailsPage(id: id ?? ''),
+            settings: settings,
+          );
         }
         return null;
       },
@@ -83,6 +91,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.updateAccount: (_) => const UpdateAccount(),
         AppRoutes.loginPage: (_) => const LoginPage(),
         AppRoutes.resetPassword: (_) => const ResetPassword(),
+        AppRoutes.kbDetails: (_) => const KbDetailsPage(id: ''),
       },
     );
   }

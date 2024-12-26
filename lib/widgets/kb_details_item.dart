@@ -3,7 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class KbDetailsItem extends StatefulWidget {
-  const KbDetailsItem({super.key});
+  const KbDetailsItem({
+    super.key,
+    required this.id,
+    required this.unitName,
+    required this.updatedAt,
+    required this.status,
+  });
+
+  final String id;
+  final String unitName;
+  final String updatedAt;
+  final bool status;
 
   @override
   State<KbDetailsItem> createState() => _KbDetailsItemState();

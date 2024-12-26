@@ -24,7 +24,8 @@ class KBItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).pushNamed(AppRoutes.kbDetails),
+      onTap: () =>
+          Navigator.of(context).pushNamed('${AppRoutes.kbDetails}/$id'),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
         padding: const EdgeInsets.all(8.0),

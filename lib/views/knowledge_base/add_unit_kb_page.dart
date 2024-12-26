@@ -1,7 +1,21 @@
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:final_project/consts/api.dart';
+import 'package:final_project/views/knowledge_base/add_website_unit.dart';
 import 'package:flutter/material.dart';
 
+import '../../utils/global_methods.dart';
+import 'package:http/http.dart' as http;
+
 class AddUnitKBPage extends StatefulWidget {
-  const AddUnitKBPage({super.key});
+  const AddUnitKBPage({
+    super.key,
+    required this.id,
+  });
+
+  final String id;
 
   @override
   State<AddUnitKBPage> createState() => _AddUnitKBPageState();
@@ -9,6 +23,13 @@ class AddUnitKBPage extends StatefulWidget {
 
 class _AddUnitKBPageState extends State<AddUnitKBPage> {
   String? _selectedValue;
+  late final String _kbId;
+
+  @override
+  void initState() {
+    _kbId = widget.id;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +64,18 @@ class _AddUnitKBPageState extends State<AddUnitKBPage> {
             child: ListView(
               // shrinkWrap: true,
               children: [
-                _buildOption(context, 'assets/icon/document.png', 'Local files'),
+                _buildOption(
+                    context, 'assets/icon/document.png', 'Local files'),
                 _buildOption(context, 'assets/icon/web.png', 'Website'),
-                _buildOption(context, 'assets/icon/github.png', 'Github repositories'),
-                _buildOption(context, 'assets/icon/gitlab.png', 'Gitlab repositories'),
-                _buildOption(context, 'assets/icon/google-drive.png', 'Google drive'),
+                _buildOption(
+                    context, 'assets/icon/github.png', 'Github repositories'),
+                _buildOption(
+                    context, 'assets/icon/gitlab.png', 'Gitlab repositories'),
+                _buildOption(
+                    context, 'assets/icon/google-drive.png', 'Google drive'),
                 _buildOption(context, 'assets/icon/slack.png', 'Slack'),
-                _buildOption(context, 'assets/icon/confluence.png', 'Confluence'),
+                _buildOption(
+                    context, 'assets/icon/confluence.png', 'Confluence'),
                 _buildOption(context, 'assets/icon/jira.png', 'Jira'),
                 _buildOption(context, 'assets/icon/hubspot.png', 'Hubspot'),
                 _buildOption(context, 'assets/icon/linear.png', 'Linear'),
@@ -71,12 +97,52 @@ class _AddUnitKBPageState extends State<AddUnitKBPage> {
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    if (_selectedValue == 'Local files') {
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles();
+
+                      if (result != null) {
+                        File file = File(result.files.single.path!);
+                        var headers = {
+                          'x-jarvis-guid': '',
+                          'Authorization': 'Bearer {{kb_token}}'
+                        };
+                        var request = http.Request(
+                            'GET',
+                            Uri.parse(
+                                '$kbAPIUrl/kb-core/v1/knowledge?q&order=DESC&order_field=createdAt&offset&limit=20'));
+
+                        request.headers.addAll(headers);
+
+                        http.StreamedResponse response = await request.send();
+
+                        if (response.statusCode == 200) {
+                          print(await response.stream.bytesToString());
+                        } else {
+                          print(response.reasonPhrase);
+                        }
+                      } else {
+                        // User canceled the picker
+                      }
+                    }
+
+                    if (_selectedValue == 'Website') {
+                      log('Knowledge base ID: $_kbId');
+                      Utils.showBottomSheet(
+                        context,
+                        sheet: AddWebsiteUnit(
+                          id: _kbId,
+                        ),
+                        showFullScreen: true,
+                      );
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[800],
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('OK'),
+                  child: const Text('Next'),
                 ),
               ],
             ),
