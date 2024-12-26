@@ -1,6 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
-import 'package:flutter/material.dart';
+import 'package:final_project/services/subscription_service.dart';
+import 'dart:developer';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:final_project/utils/global_methods.dart'; // Import the file where launchSlackConfigUrl is defined
 
 class UpdateAccount extends StatelessWidget {
   const UpdateAccount({super.key});
@@ -36,13 +40,23 @@ class UpdateAccount extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               MaterialButtonCustomWidget(
-                onPressed: () {},
+                onPressed: () => Utils.launchSlackConfigUrl(urlString: 'https://admin.dev.jarvis.cx/pricing/overview'),
                 title: 'Subscribe',
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
               ),
               const SizedBox(height: 16),
               MaterialButtonCustomWidget(
-                onPressed: () {},
+                onPressed: () async {
+                  SubscriptionService subscriptionService = SubscriptionService();
+                  var subscriptionData = await subscriptionService.getSubscriptionUsage(context);
+                  if (subscriptionData != null) {
+                    // Handle the subscription data as needed
+                    print('Subscription data: $subscriptionData');
+                  } else {
+                    // Handle the error case
+                    print('Failed to restore subscription');
+                  }
+                },
                 title: 'Restore Subscription',
                 isApproved: false,
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
