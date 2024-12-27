@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
 import 'package:final_project/providers/auth_provider.dart';
@@ -15,15 +13,16 @@ import 'package:final_project/views/authentication/reset_password.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
 import 'package:final_project/views/user_info/update_account.dart';
 import 'package:final_project/views/user_info/user_profile.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/views/authentication/register_page.dart';
 import 'package:final_project/views/authentication/login_gmail_page.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart'; // Ensure this file is correctly configured
+// import 'firebase_options.dart'; // Ensure this file is correctly configured
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
   // await Firebase.initializeApp(
   //   options: DefaultFirebaseOptions.currentPlatform,
   // );
@@ -47,10 +46,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log('is Authenticated: ${context.watch<AuthenticationProvider>().isAuthenticated}');
-
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Loopy Bot',
       theme: ThemeData(
         primaryColor: AppColors.primaryColor,
         scaffoldBackgroundColor: AppColors.backgroundColor1,
