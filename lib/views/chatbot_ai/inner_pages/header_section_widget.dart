@@ -27,7 +27,7 @@ class HeaderSection extends StatelessWidget {
         const SizedBox(height: 2),
         GestureDetector(
           onTap: () async {
-            await Utils.launchSlackConfigUrl(
+            await Utils.launchUrlString(
               urlString: urlString,
             );
           },

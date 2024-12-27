@@ -176,7 +176,7 @@ class _PublishResultItem extends StatelessWidget {
           if (redirectUrl != null)
             MaterialButtonCustomWidget(
               onPressed: () async {
-                await Utils.launchSlackConfigUrl(urlString: redirectUrl!);
+                await Utils.launchUrlString(urlString: redirectUrl!);
               },
               title: 'Open',
               padding: const EdgeInsets.symmetric(
