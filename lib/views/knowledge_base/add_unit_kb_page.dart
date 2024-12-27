@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:final_project/consts/api.dart';
+import 'package:final_project/views/knowledge_base/add_confluence_unit.dart';
 import 'package:final_project/views/knowledge_base/add_slack_unit.dart';
 import 'package:final_project/views/knowledge_base/add_website_unit.dart';
 import 'package:flutter/material.dart';
@@ -143,6 +144,16 @@ class _AddUnitKBPageState extends State<AddUnitKBPage> {
                       Utils.showBottomSheet(
                         context,
                         sheet: AddSlackUnit(
+                          id: _kbId,
+                        ),
+                        showFullScreen: true,
+                      );
+                    }
+
+                    if (_selectedValue == 'Confluence') {
+                      Utils.showBottomSheet(
+                        context,
+                        sheet: AddConfluenceUnit(
                           id: _kbId,
                         ),
                         showFullScreen: true,
