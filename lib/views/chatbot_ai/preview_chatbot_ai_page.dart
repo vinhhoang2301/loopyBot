@@ -152,7 +152,7 @@ class _PreviewChatbot extends State<PreviewChatbot> {
                                         children: [
                                           Icon(Icons.add),
                                           SizedBox(width: 4),
-                                          Text('New Thread'),
+                                          Text('New Chat'),
                                         ],
                                       ),
                               ),

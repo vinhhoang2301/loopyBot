@@ -27,7 +27,7 @@ class Utils {
     );
   }
 
-  static Future<void> launchSlackConfigUrl({required String urlString}) async {
+  static Future<void> launchUrlString({required String urlString}) async {
     try {
       final Uri url = Uri.parse(urlString);
       if (await canLaunchUrl(url)) {
