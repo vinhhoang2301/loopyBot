@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:final_project/models/kb_model.dart';
+import 'package:final_project/models/unit_model.dart';
 import 'package:flutter/material.dart';
 
 import '../consts/api.dart';
@@ -9,6 +10,44 @@ import 'kb_authen_service.dart';
 import 'package:http/http.dart' as http;
 
 class KbService {
+  static Future<List<UnitModel>?> getAllUnit({
+    required BuildContext context,
+    required String id,
+  }) async {
+    final accessToken = await KBAuthService.getKbAccessToken(context);
+
+    try {
+      var headers = {
+        'x-jarvis-guid': '',
+        'Authorization': 'Bearer $accessToken'
+      };
+      var request = http.Request(
+        'GET',
+        Uri.parse(
+            '$kbAPIUrl/kb-core/v1/knowledge/$id/units?q&order=DESC&order_field=createdAt&offset=&limit=20'),
+      );
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log("Get All Unit Success");
+        final result = jsonDecode(await response.stream.bytesToString());
+
+        return (result['data'] as List<dynamic>)
+            .map((item) => UnitModel.fromJson(item))
+            .toList();
+      } else {
+        log("error: ${response.reasonPhrase}");
+        return null;
+      }
+    } catch (err) {
+      log('Error in getting all units: ${err.toString()}');
+      return null;
+    }
+  }
+
   static Future<List<KbModel>?> getAllKnowledge(
       {required BuildContext context}) async {
     final accessToken = await KBAuthService.getKbAccessToken(context);

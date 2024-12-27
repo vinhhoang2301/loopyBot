@@ -5,6 +5,8 @@ import 'package:final_project/services/kb_unit_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../consts/app_routes.dart';
+
 class AddWebsiteUnit extends StatefulWidget {
   const AddWebsiteUnit({
     super.key,
@@ -41,6 +43,7 @@ class _AddWebsiteUnitState extends State<AddWebsiteUnit> {
 
     if (result != null) {
       log('Success');
+      Navigator.of(context).pushReplacementNamed(AppRoutes.kbDetails);
     } else {
       log('Failed');
     }

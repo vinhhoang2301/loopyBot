@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/models/unit_model.dart';
+import 'package:final_project/services/kb_service.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/knowledge_base/add_unit_kb_page.dart';
 import 'package:final_project/widgets/kb_details_item.dart';
@@ -22,14 +25,47 @@ class KbDetailsPage extends StatefulWidget {
 class _KbDetailsPageState extends State<KbDetailsPage> {
   late final String _kbId;
   List<UnitModel>? allUnit = [];
+  bool isLoading = false;
 
   @override
   void initState() {
     _kbId = widget.id;
     super.initState();
+    _initializeData();
+  }
+
+  Future<void> fetchAllUnit() async {
+    final allUnitFetched = await KbService.getAllUnit(
+      context: context,
+      id: _kbId,
+    );
+
+    allUnit = allUnitFetched;
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      setState(() => isLoading = true);
+
+      await fetchAllUnit();
+    } catch (err) {
+      log('Error when Initialize Data in KB');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   Widget _buildContent() {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.defaultTextColor,
+        ),
+      );
+    }
+
     if (allUnit == null) {
       return const EmptyPage(content: 'No Unit. Let Create It');
     }
@@ -45,6 +81,8 @@ class _KbDetailsPageState extends State<KbDetailsPage> {
                 updatedAt: unitItem.updatedAt!,
                 unitName: unitItem.name!,
                 status: unitItem.status!,
+                size: unitItem.size!,
+                type: unitItem.type!,
               )
             : const SizedBox(
                 height: 40,
