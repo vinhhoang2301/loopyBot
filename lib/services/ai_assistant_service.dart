@@ -34,7 +34,7 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Disconnect Bot Integration: ${response.statusCode}');
         return false;
       }
     } catch (err) {
@@ -69,7 +69,7 @@ class AiAssistantService {
             .map((item) => PublishedAssistant.fromJson(item))
             .toList();
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Get Configurations Bot: ${response.statusCode}');
         return null;
       }
     } catch (err) {
@@ -107,7 +107,7 @@ class AiAssistantService {
         final result = jsonDecode(await response.stream.bytesToString());
         return result['redirect'];
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Publish Messenger Bot: ${response.statusCode}');
         return null;
       }
     } catch (err) {
@@ -150,7 +150,7 @@ class AiAssistantService {
         final result = jsonDecode(await response.stream.bytesToString());
         return result['redirect'];
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Publish Slack Bot: ${response.statusCode}');
         return null;
       }
     } catch (err) {
@@ -185,7 +185,7 @@ class AiAssistantService {
         final result = jsonDecode(await response.stream.bytesToString());
         return result['redirect'];
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Publish Telegram Bot: ${response.statusCode}');
         return null;
       }
     } catch (err) {
@@ -220,7 +220,7 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Verify Messenger Bot Configure: ${response.statusCode}');
         return false;
       }
     } catch (err) {
@@ -258,7 +258,7 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Verify Slack Bot Configures: ${response.statusCode}');
         return false;
       }
     } catch (err) {
@@ -292,7 +292,7 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Verify Telegram Bot Configure: ${response.statusCode}');
         return false;
       }
     } catch (err) {
@@ -324,7 +324,7 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Remove Knowledge from Assistant: ${response.statusCode}');
         return false;
       }
     } catch (err) {
@@ -356,7 +356,7 @@ class AiAssistantService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Import Knowledge to Assistant: ${response.statusCode}');
         return false;
       }
     } catch (err) {
@@ -391,7 +391,7 @@ class AiAssistantService {
             .map((item) => KbModel.fromJson(item))
             .toList();
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Get Imported Knowledge of Assistant: ${response.statusCode}');
         return null;
       }
     } catch (err) {
@@ -428,11 +428,11 @@ class AiAssistantService {
             .map((item) => AiAssistantModel.fromJson(item))
             .toList();
       } else {
-        log('error: ${response.statusCode}');
+        log('Error in Get All Assistant: ${response.statusCode}');
         return null;
       }
     } catch (err) {
-      log('Error in Create Assistant: ${err.toString()}');
+      log('Error in Get All Assistant: ${err.toString()}');
       return null;
     }
   }

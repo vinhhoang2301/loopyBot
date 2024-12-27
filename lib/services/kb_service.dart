@@ -39,7 +39,7 @@ class KbService {
             .map((item) => UnitModel.fromJson(item))
             .toList();
       } else {
-        log("error: ${response.reasonPhrase}");
+        log("Error in getting all units: ${response.reasonPhrase}");
         return null;
       }
     } catch (err) {
@@ -74,11 +74,11 @@ class KbService {
             .map((item) => KbModel.fromJson(item))
             .toList();
       } else {
-        log("error: ${response.reasonPhrase}");
+        log("Error in Get All Knowledge: ${response.reasonPhrase}");
         return null;
       }
     } catch (err) {
-      log('Error in Create Assistant: ${err.toString()}');
+      log('Error in Get All Knowledge: ${err.toString()}');
       return null;
     }
   }
