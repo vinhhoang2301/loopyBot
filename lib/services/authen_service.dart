@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/key.dart';
+import 'package:final_project/models/user_model.dart';
 import 'package:final_project/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -162,6 +163,28 @@ class AuthenticationService {
     }
 
     return _cachedAccessToken ?? '';
+  }
+
+  static Future<UserModel?> getCurrentUser({required BuildContext context}) async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+    var request = http.MultipartRequest('GET', Uri.parse('$devServer/api/v1/auth/me'));
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final result = await response.stream.bytesToString();
+
+      log('result user info: $result');
+
+      return UserModel.fromJson(jsonDecode(result));
+    } else {
+      log('Error when getting current user: ${response.reasonPhrase}');
+      return null;
+    }
   }
 
   static void clearToken() {

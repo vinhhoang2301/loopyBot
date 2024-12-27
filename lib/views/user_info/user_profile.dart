@@ -1,14 +1,18 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/models/user_model.dart';
+import 'package:final_project/services/authen_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:final_project/services/subscription_service.dart';
-
 import '../../consts/app_routes.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
+
   @override
   _UserProfileState createState() => _UserProfileState();
 }
@@ -17,12 +21,14 @@ class _UserProfileState extends State<UserProfile> {
   int availableTokens = 0;
   int totalTokens = 0;
   Map<String, dynamic>? subscriptionData;
+  UserModel? user;
 
   @override
   void initState() {
     super.initState();
     _fetchTokenUsage();
     _fetchSubscriptionData();
+    _fetchCurrentUserInfo();
   }
 
   Future<void> _fetchTokenUsage() async {
@@ -44,6 +50,11 @@ class _UserProfileState extends State<UserProfile> {
         subscriptionData = data;
       });
     }
+  }
+
+  Future<void> _fetchCurrentUserInfo() async {
+    user = await AuthenticationService.getCurrentUser(context: context);
+    setState(() {});
   }
 
   @override
@@ -70,23 +81,27 @@ class _UserProfileState extends State<UserProfile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Token Usage',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Row(
+                      const Text(
+                        'Token Usage',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Today'),
                           Text('Total'),
                         ],
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: totalTokens > 0 ? availableTokens / totalTokens : 0,
                         color: Colors.blue,
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -97,7 +112,7 @@ class _UserProfileState extends State<UserProfile> {
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -106,18 +121,39 @@ class _UserProfileState extends State<UserProfile> {
                   borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Your subscription:',
-                      style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Your subscription',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       if (subscriptionData != null) ...[
-                        Text('Name: ${subscriptionData!['name']}'),
-                        Text('Daily Tokens: ${subscriptionData!['dailyTokens']}'),
-                        Text('Monthly Tokens: ${subscriptionData!['monthlyTokens']}'),
-                        Text('Annually Tokens: ${subscriptionData!['annuallyTokens']}'),
+                        Column(
+                          children: [
+                            const SizedBox(height: 8),
+                            _SubscriptionContent(
+                              title: 'Name:',
+                              value: subscriptionData!['name'],
+                            ),
+                            _SubscriptionContent(
+                              title: 'Daily Tokens:',
+                              value: subscriptionData!['dailyTokens'].toString(),
+                            ),
+                            _SubscriptionContent(
+                              title: 'Monthly Tokens:',
+                              value: subscriptionData!['monthlyTokens'].toString(),
+                            ),
+                            _SubscriptionContent(
+                              title: 'Annually Tokens:',
+                              value: subscriptionData!['annuallyTokens'].toString(),
+                            ),
+                          ],
+                        ),
                       ] else ...[
-                        Text('Loading subscription data...'),
+                        const Text('Loading subscription data...'),
                       ],
                     ],
                   ),
@@ -140,20 +176,22 @@ class _UserProfileState extends State<UserProfile> {
                       const SizedBox(height: 8),
                       Card(
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        child: const ListTile(
-                          leading: Icon(Icons.person, color: Colors.blue),
-                          title: Text('Username'),
-                          subtitle: Text('username01'),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.person, color: Colors.blue),
+                          title: const Text('Username'),
+                          subtitle: Text(user != null ? user!.username.toString() : 'Failed to load current user info'),
                         ),
                       ),
                       Card(
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        child: const ListTile(
-                          leading: Icon(Icons.person, color: Colors.blue),
-                          title: Text('Email'),
-                          subtitle: Text('user.jarvis@gmail.com'),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.email, color: Colors.blue),
+                          title: const Text('Email'),
+                          subtitle: Text(user != null ? user!.email.toString() : 'Failed to load current user info'),
                         ),
                       ),
                     ],
@@ -166,7 +204,7 @@ class _UserProfileState extends State<UserProfile> {
                     onPressed: () async {
                       //
                       FlutterSecureStorage secureStorage =
-                          FlutterSecureStorage();
+                          const FlutterSecureStorage();
                       String? refreshToken =
                           await secureStorage.read(key: 'refreshToken');
                       var headers = {
@@ -182,12 +220,12 @@ class _UserProfileState extends State<UserProfile> {
 
                       if (response.statusCode == 200 ||
                           response.statusCode == 201) {
-                        print(await response.stream.bytesToString());
+                        log(await response.stream.bytesToString());
                         await secureStorage.delete(key: 'refreshToken');
                         Navigator.of(context)
                             .pushReplacementNamed(AppRoutes.loginPage);
                       } else {
-                        print(response.reasonPhrase);
+                        log(response.reasonPhrase.toString());
                       }
                     },
                     icon: const Icon(Icons.logout, color: Colors.red),
@@ -201,6 +239,40 @@ class _UserProfileState extends State<UserProfile> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SubscriptionContent extends StatelessWidget {
+  const _SubscriptionContent({
+    required this.title,
+    required this.value,
+  });
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 64.0, bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
