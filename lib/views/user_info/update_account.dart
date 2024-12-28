@@ -1,13 +1,30 @@
+import 'dart:developer';
+
+import 'package:final_project/utils/ad_helper.dart';
+import 'package:final_project/consts/api.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:final_project/services/subscription_service.dart';
-import 'dart:developer';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:final_project/utils/global_methods.dart'; // Import the file where launchSlackConfigUrl is defined
+import 'package:final_project/utils/global_methods.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-class UpdateAccount extends StatelessWidget {
+class UpdateAccount extends StatefulWidget {
   const UpdateAccount({super.key});
+
+  @override
+  State<UpdateAccount> createState() => _UpdateAccountState();
+}
+
+class _UpdateAccountState extends State<UpdateAccount> {
+  BannerAd? bannerAd;
+
+  @override
+  void initState() {
+    super.initState();
+
+    createBannerAd();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +44,8 @@ class UpdateAccount extends StatelessWidget {
               const _ContentWidget(content: 'Unlimited queries per month'),
               const _ContentWidget(
                 content: 'AI Chat Models',
-                subContent: 'GPT-3.5 & GPT-4.0/Turbo & Gemini Pro & Gemini Ultra',
+                subContent:
+                    'GPT-3.5 & GPT-4.0/Turbo & Gemini Pro & Gemini Ultra',
               ),
               const _ContentWidget(content: 'Jira Copilot Assistant'),
               const _ContentWidget(
@@ -40,31 +58,54 @@ class UpdateAccount extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               MaterialButtonCustomWidget(
-                onPressed: () => Utils.launchSlackConfigUrl(urlString: 'https://admin.dev.jarvis.cx/pricing/overview'),
-                title: 'Subscribe',
+                onPressed: () => Utils.launchUrlString(
+                  urlString: '$prodServer/pricing/overview',
+                ),
+                title: 'Upgrade to Premium',
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               MaterialButtonCustomWidget(
                 onPressed: () async {
-                  SubscriptionService subscriptionService = SubscriptionService();
-                  var subscriptionData = await subscriptionService.getSubscriptionUsage(context);
+                  SubscriptionService subscriptionService =
+                      SubscriptionService();
+                  var subscriptionData =
+                      await subscriptionService.getSubscriptionUsage(context);
+
                   if (subscriptionData != null) {
-                    // Handle the subscription data as needed
-                    print('Subscription data: $subscriptionData');
+                    log('Subscription data: $subscriptionData');
                   } else {
-                    // Handle the error case
-                    print('Failed to restore subscription');
+                    log('Failed to restore subscription');
                   }
                 },
                 title: 'Restore Subscription',
                 isApproved: false,
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
               ),
+              if (bannerAd != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: SizedBox(
+                    width: bannerAd!.size.width.toDouble(),
+                    height: bannerAd!.size.height.toDouble(),
+                    child: AdWidget(ad: bannerAd!),
+                  ),
+                ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void createBannerAd() {
+    AdHelper.createBannerAd(
+      onAdLoaded: (ad) {
+        setState(() => bannerAd = ad);
+      },
+      onAdFailedToLoad: (error) {
+        log('Failed to load a banner ad in Update Account: $error');
+      },
     );
   }
 }

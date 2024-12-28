@@ -10,6 +10,7 @@ import 'package:final_project/services/authen_service.dart';
 import 'package:final_project/services/kb_authen_service.dart';
 import 'package:final_project/services/prompt_service.dart';
 import 'package:final_project/services/token_service.dart';
+import 'package:final_project/utils/ad_helper.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chats/history_thread_chats.dart';
 import 'package:final_project/widgets/chat_message_widget.dart';
@@ -17,6 +18,7 @@ import 'package:final_project/widgets/dropdown_model_ai.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:final_project/widgets/typing_indicator_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
 // import 'package:camera/camera.dart';
@@ -50,6 +52,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
   int availableTokens = 0;
   bool isLoading = false;
   bool isTyping = false;
+  BannerAd? bannerAd;
 
   // CameraController? _cameraController;
   // XFile? _imageFile;
@@ -67,6 +70,7 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     }
 
     initChatTokens();
+    _createBannerAd();
 
     if (widget.conversationId != null && widget.conversationId!.isNotEmpty) {
       _conversationId = widget.conversationId;
@@ -220,28 +224,41 @@ class _MainChatPageState extends State<MainThreadChatPage> {
             : Column(
                 children: [
                   Expanded(
-                    child: ListView.builder(
-                      reverse: true,
-                      itemCount: _messages.length + (isTyping ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (isTyping && index == 0) {
-                          return TypingIndicatorWidget(
-                            aiAgentThumbnail: currentAiAgent is AiAgentModel ? currentAiAgent.thumbnail : 'assets/icon/chatbot.png',
-                          );
-                        }
+                    child: Stack(
+                      children: [
+                        ListView.builder(
+                          reverse: true,
+                          itemCount: _messages.length + (isTyping ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (isTyping && index == 0) {
+                              return TypingIndicatorWidget(
+                                aiAgentThumbnail: currentAiAgent is AiAgentModel ? currentAiAgent.thumbnail : 'assets/icon/chatbot.png',
+                              );
+                            }
 
-                        final messageIndex = isTyping ? index - 1 : index;
-                        if (messageIndex >= 0 && messageIndex < _messages.length) {
-                          final message = _messages[messageIndex];
-                          return ChatMessageWidget(
-                            isUser: message.role == "user",
-                            content: message.content ?? '',
-                            aiAgentThumbnail: message.assistant?.thumbnail ?? 'assets/icon/robot.png',
-                          );
-                        }
+                            final messageIndex = isTyping ? index - 1 : index;
+                            if (messageIndex >= 0 && messageIndex < _messages.length) {
+                              final message = _messages[messageIndex];
+                              return ChatMessageWidget(
+                                isUser: message.role == "user",
+                                content: message.content ?? '',
+                                aiAgentThumbnail: message.assistant?.thumbnail ?? 'assets/icon/robot.png',
+                              );
+                            }
 
-                        return const SizedBox.shrink();
-                      },
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                        if (bannerAd != null)
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: SizedBox(
+                              width: bannerAd!.size.width.toDouble(),
+                              height: bannerAd!.size.height.toDouble(),
+                              child: AdWidget(ad: bannerAd!),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -433,6 +450,18 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                 ],
               ),
       ),
+    );
+  }
+
+  void _createBannerAd() {
+    AdHelper.createBannerAd(
+      size: const AdSize(width: 400, height: 60),
+      onAdLoaded: (ad) {
+        setState(() => bannerAd = ad);
+      },
+      onAdFailedToLoad: (error) {
+        log('Failed to load a banner ad in Update Account: $error');
+      },
     );
   }
 

@@ -3,12 +3,14 @@ import 'dart:developer';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/models/kb_model.dart';
 import 'package:final_project/services/kb_service.dart';
+import 'package:final_project/utils/ad_helper.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/empty_page.dart';
 import 'package:final_project/views/knowledge_base/add_kb_page.dart';
 import 'package:final_project/widgets/kb_item.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../services/authen_service.dart';
 import '../../services/kb_authen_service.dart';
@@ -29,11 +31,13 @@ class _KBPage extends State<KBPage> {
   List<KbModel>? allKnowledge = [];
   List<KbModel>? filteredKnowledge = [];
   bool isLoading = false;
+  BannerAd? bannerAd;
 
   @override
   void initState() {
     super.initState();
     _initializeData();
+    _createBannerAd();
 
     _searchController.addListener(_onSearchChanged);
     _searchFocusNode.addListener(() {
@@ -120,6 +124,15 @@ class _KBPage extends State<KBPage> {
                 ),
               ),
             ),
+            if (bannerAd != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: bannerAd!.size.width.toDouble(),
+                  height: bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: bannerAd!),
+                ),
+              ),
             const SizedBox(width: 16),
             Expanded(
               child: _buildContent(),
@@ -261,5 +274,16 @@ class _KBPage extends State<KBPage> {
     );
 
     setState(() => deleteLoadingStates[id] = false);
+  }
+
+  void _createBannerAd() {
+    AdHelper.createBannerAd(
+      onAdLoaded: (ad) {
+        setState(() => bannerAd = ad);
+      },
+      onAdFailedToLoad: (error) {
+        log('Failed to load a banner ad in Update Account: $error');
+      },
+    );
   }
 }

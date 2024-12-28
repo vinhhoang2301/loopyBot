@@ -5,6 +5,7 @@ import 'package:final_project/models/ai_assistant_model.dart';
 import 'package:final_project/services/ai_assistant_service.dart';
 import 'package:final_project/services/authen_service.dart';
 import 'package:final_project/services/kb_authen_service.dart';
+import 'package:final_project/utils/ad_helper.dart';
 import 'package:final_project/utils/global_methods.dart';
 import 'package:final_project/views/chatbot_ai/add_chatbot_ai_page.dart';
 import 'package:final_project/views/empty_page.dart';
@@ -13,6 +14,7 @@ import 'package:final_project/widgets/chatbot_ai_item.dart';
 import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class ChatbotAIPage extends StatefulWidget {
   const ChatbotAIPage({super.key});
@@ -26,6 +28,7 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
   final FocusNode _searchFocusNode = FocusNode();
 
   bool isLoading = false;
+  BannerAd? bannerAd;
 
   List<AiAssistantModel>? aiAssistants = [];
   List<AiAssistantModel>? filteredAssistants = [];
@@ -35,6 +38,8 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
     super.initState();
 
     _initializeData();
+    _createBannerAd();
+
     _searchController.addListener(_onSearchChanged);
     _searchFocusNode.addListener(() {
       setState(() {});
@@ -90,6 +95,15 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
                 ),
               ),
             ),
+            if (bannerAd != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: bannerAd!.size.width.toDouble(),
+                  height: bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: bannerAd!),
+                ),
+              ),
             Expanded(
               child: _buildContent(),
             ),
@@ -224,6 +238,17 @@ class _ChatbotAIPage extends State<ChatbotAIPage> {
             )
           ],
         );
+      },
+    );
+  }
+
+  void _createBannerAd() {
+    AdHelper.createBannerAd(
+      onAdLoaded: (ad) {
+        setState(() => bannerAd = ad);
+      },
+      onAdFailedToLoad: (error) {
+        log('Failed to load a banner ad in Update Account: $error');
       },
     );
   }
