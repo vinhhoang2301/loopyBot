@@ -48,6 +48,7 @@ dependencies:
   camera: ^0.10.0+1
   file_picker: ^8.1.6
   google_mobile_ads: ^5.2.0
+  connectivity_plus: ^6.1.1
 
 dev_dependencies:
   flutter_test:

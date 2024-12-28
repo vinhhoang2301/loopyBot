@@ -57,8 +57,9 @@ class _KBPage extends State<KBPage> {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
     if (mounted) {
-      await KBAuthService.signInFromExternalClient(context,
-          accessToken: accessToken);
+      if (accessToken != null) {
+        await KBAuthService.signInFromExternalClient(context, accessToken: accessToken);
+      }
     }
   }
 

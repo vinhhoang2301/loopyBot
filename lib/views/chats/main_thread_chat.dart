@@ -472,11 +472,15 @@ class _MainChatPageState extends State<MainThreadChatPage> {
 
   Future<void> initHistory() async {
     try {
-      _messages = await AiChatServices.getConversationHistory(
+      final result = await AiChatServices.getConversationHistory(
         context,
         conversationId: widget.conversationId ?? '',
         assistantId: 'gpt-4o',
       );
+
+      if (result != null) {
+        _messages = result;
+      }
     } catch (e) {
       log('Error loading history chat: $e');
 
@@ -591,10 +595,12 @@ class _MainChatPageState extends State<MainThreadChatPage> {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
     if (mounted) {
-      await KBAuthService.signInFromExternalClient(
-        context,
-        accessToken: accessToken,
-      );
+      if (accessToken != null) {
+        await KBAuthService.signInFromExternalClient(
+          context,
+          accessToken: accessToken,
+        );
+      }
 
       fetchAiAssistants();
     }

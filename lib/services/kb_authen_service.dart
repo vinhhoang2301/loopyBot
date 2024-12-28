@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:final_project/consts/api.dart';
 import 'package:final_project/consts/key.dart';
 import 'package:final_project/providers/kb_auth_provider.dart';
+import 'package:final_project/utils/global_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -51,46 +52,47 @@ class KBAuthService {
     }
   }
 
-  static Future<String> getKbAccessToken(BuildContext context) async {
-    if (_cachedAccessToken != null && _tokenExpiryTime != null) {
-      if (DateTime.now().isBefore(_tokenExpiryTime!)) {
-        return _cachedAccessToken!;
-      }
-    }
+  static Future<String?> getKbAccessToken(BuildContext context) async {
+    return await Utils.withConnection(
+      context,
+      () async {
+        if (_cachedAccessToken != null && _tokenExpiryTime != null) {
+          if (DateTime.now().isBefore(_tokenExpiryTime!)) {
+            return _cachedAccessToken!;
+          }
+        }
 
-    final refreshToken =
-        Provider.of<KBAuthProvider>(context, listen: false).refreshToken;
+        final refreshToken = Provider.of<KBAuthProvider>(context, listen: false).refreshToken;
 
-    var headers = {'x-jarvis-guid': '', 'Content-Type': 'application/json'};
-    var request = http.Request(
-        'GET',
-        Uri.parse(
-            '$kbAPIUrl/kb-core/v1/auth/refresh?refreshToken=$refreshToken'));
-    request.body = json.encode({});
-    request.headers.addAll(headers);
+        var headers = {'x-jarvis-guid': '', 'Content-Type': 'application/json'};
+        var request = http.Request('GET', Uri.parse('$kbAPIUrl/kb-core/v1/auth/refresh?refreshToken=$refreshToken'));
+        request.body = json.encode({});
+        request.headers.addAll(headers);
 
-    try {
-      http.StreamedResponse response = await request.send();
+        try {
+          http.StreamedResponse response = await request.send();
 
-      final statusCode = response.statusCode;
-      log('KB Refresh Token: $refreshToken');
+          final statusCode = response.statusCode;
+          log('KB Refresh Token: $refreshToken');
 
-      if (statusCode == 200 || statusCode == 201) {
-        final result = jsonDecode(await response.stream.bytesToString());
+          if (statusCode == 200 || statusCode == 201) {
+            final result = jsonDecode(await response.stream.bytesToString());
 
-        _cachedAccessToken = result[TOKEN][ACCESS_TOKEN];
-        _tokenExpiryTime = DateTime.now().add(
-          const Duration(minutes: 1),
-        );
+            _cachedAccessToken = result[TOKEN][ACCESS_TOKEN];
+            _tokenExpiryTime = DateTime.now().add(
+              const Duration(minutes: 1),
+            );
 
-        log('Get KB Access Token Successfully');
-      } else {
-        log('Get KB Access Token Failed: $statusCode');
-      }
-    } catch (err) {
-      log('Error when getting KB Access Token: ${err.toString()}');
-    }
+            log('Get KB Access Token Successfully');
+          } else {
+            log('Get KB Access Token Failed: $statusCode');
+          }
+        } catch (err) {
+          log('Error when getting KB Access Token: ${err.toString()}');
+        }
 
-    return _cachedAccessToken ?? '';
+        return _cachedAccessToken ?? '';
+      },
+    );
   }
 }

@@ -244,18 +244,20 @@ class _LoginPageState extends State<LoginPage> {
       password: password,
     );
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result.isEmpty ? 'Sign In Successfully!' : result,
+    if (result != null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.isEmpty ? 'Sign In Successfully!' : result,
+            ),
+            backgroundColor: result.isEmpty ? Colors.green : Colors.red,
           ),
-          backgroundColor: result.isEmpty ? Colors.green : Colors.red,
-        ),
-      );
+        );
 
-      if (result.isEmpty) {
-        Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
+        if (result.isEmpty) {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
+        }
       }
     }
 
@@ -263,7 +265,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void signInWithGoogle() async {
-    await AuthenticationService.loginViaGoogle(context: context);
+    final result = await AuthenticationService.loginViaGoogle(context: context);
+    // todo: handle this later
   }
 
   // void _initRefreshToken() async {

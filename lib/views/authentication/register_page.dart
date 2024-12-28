@@ -224,21 +224,21 @@ class _RegisterPageState extends State<RegisterPage> {
       password: password,
     );
 
-    if (context.mounted) {
-      setState(() => isLoading = false);
+    if (result != null) {
+      if (context.mounted) {
+        setState(() => isLoading = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result
-                ? 'Create LoopyBot Account successfully!'
-                : 'Create LoopyBot Account failed',
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result ? 'Create LoopyBot Account successfully!' : 'Create LoopyBot Account failed',
+            ),
+            backgroundColor: result ? Colors.green : Colors.red,
           ),
-          backgroundColor: result ? Colors.green : Colors.red,
-        ),
-      );
+        );
 
-      Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
+        Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
+      }
     }
   }
 }
