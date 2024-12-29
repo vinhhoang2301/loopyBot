@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:final_project/views/prompt/prompt_library.dart';
+import 'package:final_project/views/email/write_email.dart';
 // import 'package:camera/camera.dart';
 
 class MainThreadChatPage extends StatefulWidget {
@@ -147,7 +148,12 @@ class _MainChatPageState extends State<MainThreadChatPage> {
       });
     }
   }
-
+  void _navigateToWriteEmail() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => WriteEmailPage()),
+    );
+  }
   Future<void> _onPromptHintSelected(PromptModel prompt) async {
     setState(() {
       _chatController.text = prompt.content;
@@ -211,6 +217,13 @@ class _MainChatPageState extends State<MainThreadChatPage> {
                 width: 28,
               ),
               onPressed: _navigateToPromptLibrary,
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.mail,
+                color: AppColors.inverseTextColor,
+              ),
+              onPressed: _navigateToWriteEmail,
             ),
           ],
         ),
