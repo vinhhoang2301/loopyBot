@@ -13,6 +13,7 @@ class WriteEmailPage extends StatefulWidget {
 
 class _WriteEmailPageState extends State<WriteEmailPage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _responseEmailController = TextEditingController();
   String? _mainIdea;
   String? _action;
   String? _email;
@@ -24,10 +25,16 @@ class _WriteEmailPageState extends State<WriteEmailPage> {
   String? _tone;
   String? _language;
   String? _responseEmail;
+  bool _isLoading = false;
 
   Future<void> _sendEmail() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+        _responseEmail = null;
+      });
+
       WriteEmailService emailService = WriteEmailService();
       String? responseEmail = await emailService.sendEmail(
         context: context,
@@ -42,19 +49,58 @@ class _WriteEmailPageState extends State<WriteEmailPage> {
         tone: _tone!,
         language: _language!,
       );
+
+      if (responseEmail != null) {
+        setState(() {
+          _responseEmailController.text = responseEmail;
+        });
+      }
       setState(() {
-        _responseEmail = responseEmail;
+        _isLoading = false;
       });
     }
   }
 
+  Future<void> _appendIdeas(String action) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    WriteEmailService emailService = WriteEmailService();
+    List<String>? ideas = await emailService.getIdeas(
+      context: context,
+      action: action,
+      email: _email!,
+      subject: _subject!,
+      sender: _sender!,
+      receiver: _receiver!,
+      language: _language!,
+    );
+
+    if (ideas != null && ideas.isNotEmpty) {
+      setState(() {
+        _responseEmailController.text += '\n\nSuggestions:\n${ideas.join('\n')}';
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   void _copyToClipboard() {
-    if (_responseEmail != null) {
-      Clipboard.setData(ClipboardData(text: _responseEmail!));
+    if (_responseEmailController.text.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: _responseEmailController.text));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Response email copied to clipboard')),
       );
     }
+  }
+
+  void _appendSentence(String sentence) {
+    setState(() {
+      _responseEmailController.text += ' $sentence';
+    });
   }
 
   @override
@@ -64,9 +110,7 @@ class _WriteEmailPageState extends State<WriteEmailPage> {
         title: const Text('Write respond Email'),
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.inverseTextColor,
-        actions: [
-          
-        ],
+        actions: [],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -241,30 +285,69 @@ class _WriteEmailPageState extends State<WriteEmailPage> {
                   onPressed: _sendEmail,
                 ),
               ),
-              if (_responseEmail != null) ...[
-                SizedBox(height: 16),
+
+              if (_isLoading)
+                Center(
+                  child: CircularProgressIndicator(),
+                )
+              else ...[ ],
+              SizedBox(height: 16),
+              if (_responseEmailController.text.isNotEmpty) ...[
                 Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _responseEmail!,
-                        style: TextStyle(color: AppColors.defaultTextColor),
-                      ),
-                      SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: _copyToClipboard,
-                        child: Text('Copy to Clipboard'),
-                      ),
-                    ],
-                  ),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryColor,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _responseEmailController,
+                      style: TextStyle(color: AppColors.defaultTextColor),
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                      IconButton(
+                        icon: Icon(Icons.copy),
+                        onPressed: _copyToClipboard,
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _appendIdeas('Thanks'),
+                        child: Text('Thanks'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _appendIdeas('Sorry'),
+                        child: Text('Sorry'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _appendIdeas('Yes'),
+                        child: Text('Yes'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _appendIdeas('No'),
+                        child: Text('No'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _appendIdeas('Follow Up'),
+                        child: Text('Follow Up'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _appendIdeas('Request for more information'),
+                        child: Text('Request for more information'),
+                      ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              ]
+                      
             ],
           ),
         ),
