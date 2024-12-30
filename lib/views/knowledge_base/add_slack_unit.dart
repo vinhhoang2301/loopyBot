@@ -26,24 +26,47 @@ class _AddSlackUnitState extends State<AddSlackUnit> {
   final connectSlackUrl =
       'https://jarvis.cx/help/knowledge-base/connectors/slack/';
 
+  bool isLoading = false;
+
   void createSlackUnit() async {
-    var result = await KbUnitService.createSlackUnit(
-      context: context,
-      unitName: unitNameCtrl.text.trim(),
-      slackWorkspace: slackWorkspaceCtrl.text.trim(),
-      slackBotToken: slackBotTokenCtrl.text.trim(),
-      id: _kbId,
-    );
+    if (isLoading) return;
 
-    unitNameCtrl.clear();
-    slackWorkspaceCtrl.clear();
-    slackBotTokenCtrl.clear();
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-    if (result != null) {
-      log('Success');
-      Navigator.of(context).pushReplacementNamed(AppRoutes.kbDetails);
-    } else {
-      log('Failed');
+      var result = await KbUnitService.createSlackUnit(
+        context: context,
+        unitName: unitNameCtrl.text.trim(),
+        slackWorkspace: slackWorkspaceCtrl.text.trim(),
+        slackBotToken: slackBotTokenCtrl.text.trim(),
+        id: _kbId,
+      );
+
+      unitNameCtrl.clear();
+      slackWorkspaceCtrl.clear();
+      slackBotTokenCtrl.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result != null
+                  ? 'Slack unit created successfully!'
+                  : 'Slack unit created failed',
+            ),
+            backgroundColor: result != null ? Colors.green : Colors.red,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (err) {
+      log('Error when adding slack unit: ${err.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -60,7 +83,7 @@ class _AddSlackUnitState extends State<AddSlackUnit> {
         left: 16,
         right: 16,
         top: 48,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        // bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,28 +218,38 @@ class _AddSlackUnitState extends State<AddSlackUnit> {
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
-                  onPressed: () async {
-                    createSlackUnit();
-                  },
+                  onPressed: isLoading ? null : createSlackUnit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[800],
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('OK'),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('OK'),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () async {
-              if (await canLaunchUrl(Uri.parse(connectSlackUrl))) {
-                await launchUrl(Uri.parse(connectSlackUrl));
-              } else {
-                throw 'Could not launch $connectSlackUrl';
-              }
-            },
-            child: const Text('How to connect to Slack?'),
+          const SizedBox(height: 30),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                if (await canLaunchUrl(Uri.parse(connectSlackUrl))) {
+                  await launchUrl(Uri.parse(connectSlackUrl));
+                } else {
+                  throw 'Could not launch $connectSlackUrl';
+                }
+              },
+              child: const Text('How to connect to Slack?'),
+            ),
           ),
         ],
       ),

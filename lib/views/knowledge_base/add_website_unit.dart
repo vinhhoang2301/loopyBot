@@ -24,6 +24,8 @@ class _AddWebsiteUnitState extends State<AddWebsiteUnit> {
   final webUrlCtrl = TextEditingController();
   late final String kbId;
 
+  bool isLoading = false;
+
   @override
   void initState() {
     kbId = widget.id;
@@ -31,21 +33,42 @@ class _AddWebsiteUnitState extends State<AddWebsiteUnit> {
   }
 
   void createWebsiteUnit() async {
-    var result = await KbUnitService.createWebsiteUnit(
-      context: context,
-      unitName: unitNameCtrl.text.trim(),
-      webUrl: webUrlCtrl.text.trim(),
-      id: kbId,
-    );
+    if (isLoading) return;
 
-    unitNameCtrl.clear();
-    webUrlCtrl.clear();
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-    if (result != null) {
-      log('Success');
-      Navigator.of(context).pushReplacementNamed(AppRoutes.kbDetails);
-    } else {
-      log('Failed');
+      var result = await KbUnitService.createWebsiteUnit(
+        context: context,
+        unitName: unitNameCtrl.text.trim(),
+        webUrl: webUrlCtrl.text.trim(),
+        id: kbId,
+      );
+
+      unitNameCtrl.clear();
+      webUrlCtrl.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result != null
+                  ? 'Website unit created successfully!'
+                  : 'Website unit created failed',
+            ),
+            backgroundColor: result != null ? Colors.green : Colors.red,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (err) {
+      log('Error when adding website unit: ${err.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -157,14 +180,22 @@ class _AddWebsiteUnitState extends State<AddWebsiteUnit> {
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
-                  onPressed: () async {
-                    createWebsiteUnit();
-                  },
+                  onPressed: isLoading ? null : createWebsiteUnit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[800],
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('OK'),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('OK'),
                 ),
               ],
             ),

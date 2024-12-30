@@ -27,26 +27,49 @@ class _AddConfluenceUnitState extends State<AddConfluenceUnit> {
   final connectConfluenceUrl =
       'https://jarvis.cx/help/knowledge-base/connectors/confluence';
 
+  bool isLoading = false;
+
   void createConfluenceUnit() async {
-    var result = await KbUnitService.createConfluenceUnit(
-      context: context,
-      unitName: unitNameCtrl.text.trim(),
-      wikiPageUrl: wikiPageUrlCtrl.text.trim(),
-      confluenceUsername: confluenceUsernameCtrl.text.trim(),
-      confluenceAccessToken: confluenceAccessTokenCtrl.text.trim(),
-      id: _kbId,
-    );
+    if (isLoading) return;
 
-    unitNameCtrl.clear();
-    wikiPageUrlCtrl.clear();
-    confluenceUsernameCtrl.clear();
-    confluenceAccessTokenCtrl.clear();
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-    if (result != null) {
-      log('Success');
-      Navigator.of(context).pushReplacementNamed(AppRoutes.kbDetails);
-    } else {
-      log('Failed');
+      var result = await KbUnitService.createConfluenceUnit(
+        context: context,
+        unitName: unitNameCtrl.text.trim(),
+        wikiPageUrl: wikiPageUrlCtrl.text.trim(),
+        confluenceUsername: confluenceUsernameCtrl.text.trim(),
+        confluenceAccessToken: confluenceAccessTokenCtrl.text.trim(),
+        id: _kbId,
+      );
+
+      unitNameCtrl.clear();
+      wikiPageUrlCtrl.clear();
+      confluenceUsernameCtrl.clear();
+      confluenceAccessTokenCtrl.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result != null
+                  ? 'Confluence unit created successfully!'
+                  : 'Confluence unit created failed',
+            ),
+            backgroundColor: result != null ? Colors.green : Colors.red,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (err) {
+      log('Error when adding Confluence unit: ${err.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -63,7 +86,7 @@ class _AddConfluenceUnitState extends State<AddConfluenceUnit> {
         left: 16,
         right: 16,
         top: 48,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        // bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,28 +255,38 @@ class _AddConfluenceUnitState extends State<AddConfluenceUnit> {
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
-                  onPressed: () async {
-                    createConfluenceUnit();
-                  },
+                  onPressed: isLoading ? null : createConfluenceUnit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[800],
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('OK'),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('OK'),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () async {
-              if (await canLaunchUrl(Uri.parse(connectConfluenceUrl))) {
-                await launchUrl(Uri.parse(connectConfluenceUrl));
-              } else {
-                throw 'Could not launch $connectConfluenceUrl';
-              }
-            },
-            child: const Text('How to connect to Confluence?'),
+          const SizedBox(height: 30),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                if (await canLaunchUrl(Uri.parse(connectConfluenceUrl))) {
+                  await launchUrl(Uri.parse(connectConfluenceUrl));
+                } else {
+                  throw 'Could not launch $connectConfluenceUrl';
+                }
+              },
+              child: const Text('How to connect to Confluence?'),
+            ),
           ),
         ],
       ),
