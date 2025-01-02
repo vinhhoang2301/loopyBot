@@ -45,6 +45,7 @@ class _KbDetailsItemState extends State<KbDetailsItem> {
     _updatedAt = widget.updatedAt;
     _size = widget.size;
     _type = widget.type;
+    enable = widget.status;
     super.initState();
 
     log('Date: $_updatedAt');
@@ -73,6 +74,7 @@ class _KbDetailsItemState extends State<KbDetailsItem> {
           ),
         ],
       ),
+
       child: GestureDetector(
         onTap: () => setState(() {
           enable = !enable;
@@ -120,6 +122,7 @@ class _KbDetailsItemState extends State<KbDetailsItem> {
                 onChanged: (value) {
                   setState(() {
                     enable = value;
+                    log('Enable: $enable');
                   });
                 },
                 activeColor: AppColors.primaryColor,

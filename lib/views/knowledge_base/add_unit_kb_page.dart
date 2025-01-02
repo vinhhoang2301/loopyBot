@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,6 +9,7 @@ import 'package:final_project/views/knowledge_base/add_slack_unit.dart';
 import 'package:final_project/views/knowledge_base/add_website_unit.dart';
 import 'package:flutter/material.dart';
 
+import '../../services/kb_authen_service.dart';
 import '../../utils/global_methods.dart';
 import 'package:http/http.dart' as http;
 
@@ -69,15 +71,15 @@ class _AddUnitKBPageState extends State<AddUnitKBPage> {
                 _buildOption(
                     context, 'assets/icon/document.png', 'Local files'),
                 _buildOption(context, 'assets/icon/web.png', 'Website'),
+                _buildOption(context, 'assets/icon/slack.png', 'Slack'),
+                _buildOption(
+                    context, 'assets/icon/confluence.png', 'Confluence'),
                 _buildOption(
                     context, 'assets/icon/github.png', 'Github repositories'),
                 _buildOption(
                     context, 'assets/icon/gitlab.png', 'Gitlab repositories'),
                 _buildOption(
                     context, 'assets/icon/google-drive.png', 'Google drive'),
-                _buildOption(context, 'assets/icon/slack.png', 'Slack'),
-                _buildOption(
-                    context, 'assets/icon/confluence.png', 'Confluence'),
                 _buildOption(context, 'assets/icon/jira.png', 'Jira'),
                 _buildOption(context, 'assets/icon/hubspot.png', 'Hubspot'),
                 _buildOption(context, 'assets/icon/linear.png', 'Linear'),
@@ -106,9 +108,13 @@ class _AddUnitKBPageState extends State<AddUnitKBPage> {
 
                       if (result != null) {
                         File file = File(result.files.single.path!);
+
+                        final accessToken =
+                            await KBAuthService.getKbAccessToken(context);
+
                         var headers = {
                           'x-jarvis-guid': '',
-                          'Authorization': 'Bearer {{kb_token}}'
+                          'Authorization': 'Bearer $accessToken'
                         };
                         var request = http.Request(
                             'GET',
@@ -116,13 +122,19 @@ class _AddUnitKBPageState extends State<AddUnitKBPage> {
                                 '$kbAPIUrl/kb-core/v1/knowledge?q&order=DESC&order_field=createdAt&offset&limit=20'));
 
                         request.headers.addAll(headers);
+                        request.body = json.encode({
+                          "file": file,
+                        });
 
                         http.StreamedResponse response = await request.send();
 
-                        if (response.statusCode == 200) {
-                          print(await response.stream.bytesToString());
+                        if (response.statusCode == 200 ||
+                            response.statusCode == 201) {
+                          log(await response.stream.bytesToString());
+                          log('Success');
                         } else {
-                          print(response.reasonPhrase);
+                          log(response.reasonPhrase.toString());
+                          log('Failed');
                         }
                       } else {
                         // User canceled the picker
