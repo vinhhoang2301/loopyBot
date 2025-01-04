@@ -1,9 +1,20 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
+import 'package:final_project/models/kb_model.dart';
+import 'package:final_project/services/kb_service.dart';
+import 'package:final_project/utils/ad_helper.dart';
 import 'package:final_project/utils/global_methods.dart';
+import 'package:final_project/views/empty_page.dart';
 import 'package:final_project/views/knowledge_base/add_kb_page.dart';
 import 'package:final_project/widgets/kb_item.dart';
 import 'package:final_project/widgets/tab_bar_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import '../../services/authen_service.dart';
+import '../../services/kb_authen_service.dart';
+import '../../widgets/material_button_custom_widget.dart';
 
 class KBPage extends StatefulWidget {
   const KBPage({super.key});
@@ -16,9 +27,19 @@ class _KBPage extends State<KBPage> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
+  Map<String, bool> deleteLoadingStates = {};
+  List<KbModel>? allKnowledge = [];
+  List<KbModel>? filteredKnowledge = [];
+  bool isLoading = false;
+  BannerAd? bannerAd;
+
   @override
   void initState() {
     super.initState();
+    _initializeData();
+    _createBannerAd();
+
+    _searchController.addListener(_onSearchChanged);
     _searchFocusNode.addListener(() {
       setState(() {});
     });
@@ -26,9 +47,42 @@ class _KBPage extends State<KBPage> {
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _searchFocusNode.unfocus();
     super.dispose();
+  }
+
+  Future<void> signIn() async {
+    final accessToken = await AuthenticationService.getAccessToken(context);
+
+    if (mounted) {
+      if (accessToken != null) {
+        await KBAuthService.signInFromExternalClient(context, accessToken: accessToken);
+      }
+    }
+  }
+
+  Future<void> fetchAllKnowledge() async {
+    final allKnowledgeBase = await KbService.getAllKnowledge(context: context);
+
+    allKnowledge = allKnowledgeBase;
+    filteredKnowledge = allKnowledgeBase;
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      setState(() => isLoading = true);
+
+      await signIn();
+      await fetchAllKnowledge();
+    } catch (err) {
+      log('Error when Initialize Data in KB');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -47,7 +101,8 @@ class _KBPage extends State<KBPage> {
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
@@ -65,24 +120,23 @@ class _KBPage extends State<KBPage> {
                   hintText: 'Search your Knowledge Base',
                   suffixIcon: const Icon(Icons.search),
                 ),
+                style: const TextStyle(
+                  color: Colors.black,
+                ),
               ),
             ),
+            if (bannerAd != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: bannerAd!.size.width.toDouble(),
+                  height: bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: bannerAd!),
+                ),
+              ),
             const SizedBox(width: 16),
             Expanded(
-              child: ListView(
-                children: const <Widget>[
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                  KBItem(),
-                ],
-              ),
+              child: _buildContent(),
             ),
           ],
         ),
@@ -101,6 +155,136 @@ class _KBPage extends State<KBPage> {
           child: const Icon(Icons.add),
         ),
       ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.defaultTextColor,
+        ),
+      );
+    }
+
+    if (filteredKnowledge == null || filteredKnowledge!.isEmpty) {
+      return const EmptyPage(content: 'No Knowledge Base. Let Create It');
+    }
+
+    return ListView.builder(
+      itemCount: filteredKnowledge!.length,
+      itemBuilder: (context, index) {
+        final kbItem = filteredKnowledge![index];
+
+        DateTime createdAt = DateTime.parse(kbItem.createdAt.toString());
+        return kbItem.kbId != null
+            ? KBItem(
+                createdAt: createdAt,
+                kbName: kbItem.knowledgeName!,
+                id: kbItem.kbId!,
+                delete: () => deleteKnowledge(context, id: kbItem.kbId!),
+                isDeleteLoading: deleteLoadingStates[kbItem.kbId!] ?? false,
+              )
+            : const SizedBox(
+                height: 40,
+                child: Text(
+                  'Failed to get KB',
+                  style: TextStyle(color: Colors.red),
+                ),
+              );
+      },
+    );
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
+
+    setState(() {
+      if (query.isEmpty) {
+        filteredKnowledge = allKnowledge;
+      } else {
+        filteredKnowledge = allKnowledge?.where((knowledge) {
+          final name = knowledge.knowledgeName?.toLowerCase() ?? '';
+          return name.contains(query);
+        }).toList();
+      }
+    });
+  }
+
+  Future<void> deleteKnowledge(BuildContext context,
+      {required String id}) async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text(
+              'Are you sure you want to delete this Knowledge Base?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !context.mounted) return;
+
+    setState(() => deleteLoadingStates[id] = true);
+
+    final result = await KbService.deleteKnowledge(
+      context: context,
+      id: id,
+    );
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(result ? 'Success' : 'Failed'),
+          content: Text(result
+              ? 'Knowledge Base deleted successfully'
+              : 'Failed to delete Knowledge Base. Please try again.'),
+          actions: [
+            MaterialButtonCustomWidget(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                if (result) {
+                  setState(() => isLoading = true);
+                  await fetchAllKnowledge();
+                  setState(() => isLoading = false);
+                }
+              },
+              title: 'Close',
+            )
+          ],
+        );
+      },
+    );
+
+    setState(() => deleteLoadingStates[id] = false);
+  }
+
+  void _createBannerAd() {
+    AdHelper.createBannerAd(
+      onAdLoaded: (ad) {
+        setState(() => bannerAd = ad);
+      },
+      onAdFailedToLoad: (error) {
+        log('Failed to load a banner ad in Update Account: $error');
+      },
     );
   }
 }

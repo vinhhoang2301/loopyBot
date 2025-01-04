@@ -1,7 +1,44 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:developer';
 
-class AddKBPage extends StatelessWidget {
+import 'package:final_project/consts/api.dart';
+import 'package:final_project/services/kb_service.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../../consts/app_routes.dart';
+import '../../services/authen_service.dart';
+import '../../services/kb_authen_service.dart';
+import '../../widgets/material_button_custom_widget.dart';
+
+class AddKBPage extends StatefulWidget {
   const AddKBPage({super.key});
+
+  @override
+  State<AddKBPage> createState() => _AddKBPageState();
+}
+
+class _AddKBPageState extends State<AddKBPage> {
+  final kbNameCtrl = TextEditingController();
+  final kbDescCtrl = TextEditingController();
+
+  void createKnowledgeBase() async {
+    var result = await KbService.createKnowledgeBase(
+      context: context,
+      kbName: kbNameCtrl.text.trim(),
+      kbDesc: kbDescCtrl.text.trim(),
+    );
+
+    kbNameCtrl.clear();
+    kbDescCtrl.clear();
+
+    if (result != null) {
+      log('Success');
+      Navigator.of(context).pushReplacementNamed(AppRoutes.knowledgeBase);
+    } else {
+      log('Failed');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,11 +89,15 @@ class AddKBPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           TextField(
+            controller: kbNameCtrl,
             decoration: InputDecoration(
               labelText: 'Ex: Knowledge 001',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+            ),
+            style: const TextStyle(
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 20),
@@ -69,12 +110,16 @@ class AddKBPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           TextField(
+            controller: kbDescCtrl,
             maxLines: 3,
             decoration: InputDecoration(
               labelText: 'Description',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+            ),
+            style: const TextStyle(
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 20),
@@ -91,7 +136,9 @@ class AddKBPage extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    createKnowledgeBase();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[800],
                     foregroundColor: Colors.white,

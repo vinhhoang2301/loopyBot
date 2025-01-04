@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "471790702809",
+    "project_id": "loopybot-97081",
+    "storage_bucket": "loopybot-97081.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:471790702809:android:d67fc24751ead8ce20eec8",
+        "android_client_info": {
+          "package_name": "com.example.final_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "471790702809-v9q999kbq43cfaj0cbo31f3rf7s1tkqn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.final_project",
+            "certificate_hash": "04631f5df4c64e547cfd642abd3ca63040b068a8"
+          }
+        },
+        {
+          "client_id": "471790702809-vheuehq9ulrfvb06h5eg3i33tvbaj6gd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChc5IcWQcJY7lJLocW8eFWXXrFZTJ56fI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "471790702809-vheuehq9ulrfvb06h5eg3i33tvbaj6gd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "471790702809-j351mvdq215l2bdcitnkashd4mevvcre.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.finalProject"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

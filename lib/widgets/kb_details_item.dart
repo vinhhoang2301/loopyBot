@@ -1,9 +1,26 @@
+import 'dart:developer';
+
 import 'package:final_project/consts/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class KbDetailsItem extends StatefulWidget {
-  const KbDetailsItem({super.key});
+  const KbDetailsItem({
+    super.key,
+    required this.id,
+    required this.unitName,
+    required this.updatedAt,
+    required this.status,
+    required this.size,
+    required this.type,
+  });
+
+  final String id;
+  final String unitName;
+  final String updatedAt;
+  final bool status;
+  final int size;
+  final String type;
 
   @override
   State<KbDetailsItem> createState() => _KbDetailsItemState();
@@ -11,6 +28,28 @@ class KbDetailsItem extends StatefulWidget {
 
 class _KbDetailsItemState extends State<KbDetailsItem> {
   bool enable = false;
+  late final String _unitName;
+  late final String _updatedAt;
+  late final int _size;
+  late final String _type;
+
+  String convertToFormattedDate(String updatedAt) {
+    DateTime dateTime = DateTime.parse(updatedAt);
+    String result = '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    return result;
+  }
+
+  @override
+  void initState() {
+    _unitName = widget.unitName;
+    _updatedAt = widget.updatedAt;
+    _size = widget.size;
+    _type = widget.type;
+    enable = widget.status;
+    super.initState();
+
+    log('Date: $_updatedAt');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +74,7 @@ class _KbDetailsItemState extends State<KbDetailsItem> {
           ),
         ],
       ),
+
       child: GestureDetector(
         onTap: () => setState(() {
           enable = !enable;
@@ -49,7 +89,7 @@ class _KbDetailsItemState extends State<KbDetailsItem> {
           child: ListTile(
             leading: const Icon(Icons.file_copy_outlined),
             contentPadding: const EdgeInsets.only(left: 8.0, right: 4.0),
-            title: const Column(
+            title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -57,20 +97,20 @@ class _KbDetailsItemState extends State<KbDetailsItem> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'KB Detail Item',
+                      _unitName,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text('Source'),
+                    Text(_type),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Size'),
-                    Text('Latest Update'),
+                    Text('${(_size / 1024).round()} KB'),
+                    Text(convertToFormattedDate(_updatedAt)),
                   ],
                 ),
               ],
@@ -82,6 +122,7 @@ class _KbDetailsItemState extends State<KbDetailsItem> {
                 onChanged: (value) {
                   setState(() {
                     enable = value;
+                    log('Enable: $enable');
                   });
                 },
                 activeColor: AppColors.primaryColor,

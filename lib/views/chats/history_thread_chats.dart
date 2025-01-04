@@ -172,12 +172,16 @@ class _HistoryThreadChatPageState extends State<HistoryThreadChatPage> {
     setState(() => isLoading = true);
 
     try {
-      _listConversations = await AiChatServices.getConversations(
+
+      final result = await AiChatServices.getConversations(
         context,
         assistantId: 'gpt-4o-mini',
       );
 
-      _filteredConversations = _listConversations;
+      if (result != null) {
+        _listConversations = result;
+        _filteredConversations = _listConversations;
+      }
     } catch (e) {
       log('Error when loading history thread chats: $e');
 

@@ -14,32 +14,49 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     return Drawer(
       child: Column(
         children: <Widget>[
-          const DrawerHeader(
-            decoration: BoxDecoration(
+          DrawerHeader(
+            decoration: const BoxDecoration(
               color: Colors.blue,
             ),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'Jarvis',
-                style: TextStyle(color: Colors.white, fontSize: 32),
+              child: Row(
+                children: [
+                  Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 64,
+                    height: 64,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'LoopyBot',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
           Column(
             children: [
               _TabBarItem(
-                onTap: () => Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat),
+                onTap: () => Navigator.of(context)
+                    .pushReplacementNamed(AppRoutes.homeChat),
                 itemName: 'Chat',
                 iconPath: 'assets/icon/chat.png',
               ),
               _TabBarItem(
-                onTap: () => Navigator.of(context).pushReplacementNamed(AppRoutes.chatBotAI),
+                onTap: () => Navigator.of(context)
+                    .pushReplacementNamed(AppRoutes.chatBotAI),
                 itemName: 'Chatbot AI',
                 iconPath: 'assets/icon/chatbot.png',
               ),
               _TabBarItem(
-                onTap: () => Navigator.of(context).pushReplacementNamed(AppRoutes.knowledgeBase),
+                onTap: () => Navigator.of(context)
+                    .pushReplacementNamed(AppRoutes.knowledgeBase),
                 itemName: 'Knowledge Base',
                 iconPath: 'assets/icon/kb.png',
               ),
@@ -50,12 +67,14 @@ class _TabBarWidgetState extends State<TabBarWidget> {
           Column(
             children: [
               _TabBarItem(
-                onTap: () => Navigator.of(context).pushNamed(AppRoutes.userProfile),
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.userProfile),
                 itemName: 'Profile',
                 iconPath: 'assets/icon/profile.png',
               ),
               _TabBarItem(
-                onTap: () => Navigator.of(context).pushNamed(AppRoutes.updateAccount),
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.updateAccount),
                 itemName: 'Upgrade Account',
                 iconPath: 'assets/icon/upgrade.png',
               ),

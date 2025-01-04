@@ -1,6 +1,7 @@
+import 'package:final_project/widgets/material_button_custom_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
-import 'package:final_project/consts/app_routes.dart';
+
 class LoginGmailPage extends StatelessWidget {
   const LoginGmailPage({super.key});
 
@@ -14,14 +15,13 @@ class LoginGmailPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Column(
-          children: [                     
-            const SizedBox(height: 20), 
+          children: [
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Form(               
+              child: Form(
                 child: Column(
                   children: [
-                    
                     TextFormField(
                       decoration: const InputDecoration(
                         labelText: 'Email',
@@ -35,12 +35,10 @@ class LoginGmailPage extends StatelessWidget {
                         prefixIcon: Icon(Icons.lock),
                       ),
                     ),
-                    const SizedBox(height: 20), 
-                    ElevatedButton(
-                      onPressed: () {
-                          Navigator.of(context).pushReplacementNamed(AppRoutes.homeChat);
-                      },
-                      child: const Text('Login'),
+                    const SizedBox(height: 20),
+                    MaterialButtonCustomWidget(
+                      onPressed: () {},
+                      title: 'Login',
                     ),
                   ],
                 ),

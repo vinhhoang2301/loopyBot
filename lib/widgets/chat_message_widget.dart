@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class ChatMessageWidget extends StatelessWidget {
   const ChatMessageWidget({
@@ -27,7 +28,7 @@ class ChatMessageWidget extends StatelessWidget {
                 const _Avatar(imagePath: 'assets/icon/user.png'),
               ]
             : [
-                _Avatar(imagePath: aiAgentThumbnail!),
+                _Avatar(imagePath: aiAgentThumbnail ?? 'assets/icon/chatbot.png'),
                 const SizedBox(width: 4),
                 _MessageBubble(content: content),
               ],
@@ -43,6 +44,9 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isImage = content.startsWith('Image: ');
+    final imagePath = isImage ? content.substring(7) : null;
+
     return Container(
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.8,
@@ -52,10 +56,15 @@ class _MessageBubble extends StatelessWidget {
         color: Colors.grey.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12.0),
       ),
-      child: Text(
-        content,
-        style: const TextStyle(fontSize: 16.0),
-      ),
+      child: isImage
+          ? Image.file(
+              File(imagePath!),
+              fit: BoxFit.cover,
+            )
+          : Text(
+              content,
+              style: const TextStyle(fontSize: 16.0),
+            ),
     );
   }
 }

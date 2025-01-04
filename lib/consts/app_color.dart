@@ -9,4 +9,5 @@ class AppColors {
   static const Color backgroundColor2 = Color(0xFFE8E8E8);
   static const Color defaultTextColor = Color(0xFF000000);
   static const Color inverseTextColor = Color(0xFFFFFFFF);
+  static const Color deniedColor = Color(0xFFDEE6EA);
 }

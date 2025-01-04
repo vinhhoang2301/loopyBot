@@ -22,13 +22,8 @@ class AiChatServices {
     final accessToken = await AuthenticationService.getAccessToken(context);
     AiResponseModel aiResponse;
 
-    var headers = {
-      'x-jarvis-guid': '',
-      'Authorization': 'Bearer $accessToken',
-      'Content-Type': 'application/json'
-    };
-    var request =
-        http.Request('POST', Uri.parse('$devServer/api/v1/ai-chat/messages'));
+    var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json'};
+    var request = http.Request('POST', Uri.parse('$devServer/api/v1/ai-chat/messages'));
 
     Map<String, dynamic> body = {
       "content": content,
@@ -58,52 +53,46 @@ class AiChatServices {
       log(result);
       aiResponse = AiResponseModel.fromJson(jsonDecode(result));
       return aiResponse;
+    } else {
+      throw Exception('Failed to send message: ${response.reasonPhrase}');
     }
-
-    log(response.reasonPhrase.toString());
-    return null;
   }
 
-  static Future<List<ConversationModel>> getConversations(
+  static Future<List<ConversationModel>?> getConversations(
     BuildContext context, {
     required String assistantId,
   }) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
 
-    var headers = {
-      'x-jarvis-guid': '',
-      'Authorization': 'Bearer $accessToken'
-    };
+    var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
     var request = http.Request('GET', Uri.parse('$devServer/api/v1/ai-chat/conversations?assistantId=$assistantId&assistantModel=$DIFY'));
 
     request.headers.addAll(headers);
-
     http.StreamedResponse response = await request.send();
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final result = jsonDecode(await response.stream.bytesToString());
-
-      return (result['items'] as List<dynamic>)
-          .map((item) => ConversationModel.fromJson(item))
-          .toList();
+      return (result['items'] as List<dynamic>).map((item) => ConversationModel.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to get conversations: ${response.reasonPhrase}');
     }
-
-    log(response.reasonPhrase.toString());
-    return [];
   }
 
-  static Future<List<ChatMetaData>> getConversationHistory(BuildContext context, {required String conversationId, required String assistantId}) async {
+  static Future<List<ChatMetaData>?> getConversationHistory(
+    BuildContext context, {
+    required String conversationId,
+    required String assistantId,
+  }) async {
     final accessToken = await AuthenticationService.getAccessToken(context);
     List<ChatMetaData> chatMetaData = [];
 
-    var headers = {
-      'x-jarvis-guid': '',
-      'Authorization': 'Bearer $accessToken'
-    };
-    var request = http.Request('GET', Uri.parse('$devServer/api/v1/ai-chat/conversations/$conversationId/messages?assistantId=$assistantId&assistantModel=$DIFY'));
+    var headers = {'x-jarvis-guid': '', 'Authorization': 'Bearer $accessToken'};
+    var request = http.Request(
+      'GET',
+      Uri.parse('$devServer/api/v1/ai-chat/conversations/$conversationId/messages?assistantId=$assistantId&assistantModel=$DIFY'),
+    );
 
     request.headers.addAll(headers);
-
     http.StreamedResponse response = await request.send();
 
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -130,8 +119,7 @@ class AiChatServices {
       chatMetaData = chatMetaData.reversed.toList();
       return chatMetaData;
     } else {
-      log(response.reasonPhrase.toString());
-      return [];
+      throw Exception('Failed to get conversation history: ${response.reasonPhrase}');
     }
   }
 }

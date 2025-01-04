@@ -1,208 +1,244 @@
-import 'dart:convert';
-import 'dart:developer';
-
-import 'package:final_project/consts/api.dart';
+import 'package:final_project/services/authen_service.dart';
+import 'package:final_project/widgets/material_button_custom_widget.dart';
+import 'package:final_project/widgets/text_input_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/consts/app_color.dart';
 import 'package:final_project/consts/app_routes.dart';
-import 'package:http/http.dart' as http;
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
-  void signUp(BuildContext context, String email, String username,
-      String password) async {
-    var headers = {'x-jarvis-guid': '', 'Content-Type': 'application/json'};
-    var request =
-        http.Request('POST', Uri.parse('$devServer/api/v1/auth/sign-up'));
-    request.body = json
-        .encode({"email": email, "password": password, "username": username});
-    request.headers.addAll(headers);
-    log(request.body.toString());
-    http.StreamedResponse response = await request.send();
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
-              },
-              child: const Text('Continue'),
-            ),
-          ],
-          title: const Text('Success'),
-          content: const Text('Account registration successful'),
-          contentPadding: const EdgeInsets.all(20.0),
-        ),
-      );
-      log(await response.stream.bytesToString());
-    } else {
-      int statusCode = response.statusCode;
-      switch (statusCode) {
-        case 400:
-          log('Invalid email or password');
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Close'),
-                ),
-              ],
-              title: const Text('Failed'),
-              content: const Text('Invalid email or password'),
-              contentPadding: const EdgeInsets.all(20.0),
-            ),
-          );
-          log(response.reasonPhrase.toString());
-          break;
-        case 422:
-          log('Email is already exist');
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Close'),
-                ),
-              ],
-              title: const Text('Failed'),
-              content: const Text('Your email is already exist'),
-              contentPadding: const EdgeInsets.all(20.0),
-            ),
-          );
-          log(response.reasonPhrase.toString());
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController usernameCtrl = TextEditingController();
+  final TextEditingController emailCtrl = TextEditingController();
+  final TextEditingController passwordCtrl = TextEditingController();
+  final FocusNode usernameFocusNode = FocusNode();
+  final FocusNode emailFocusNode = FocusNode();
+  final FocusNode passwordFocusNode = FocusNode();
 
-          break;
-        default:
-          log(response.reasonPhrase.toString());
-          log(response.statusCode.toString());
-          break;
-      }
-    }
-  }
+  String? emailError;
+  String? passwordError;
+
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController usernameCtrl = TextEditingController();
-    final TextEditingController emailCtrl = TextEditingController();
-    final TextEditingController passwordCtrl = TextEditingController();
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: AppColors.inverseTextColor,
-        title: const Text('Jarvis Register'),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              child: const Text('Welcome to Jarvis!'),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: usernameCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        prefixIcon: Icon(Icons.person),
-                      ),
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextFormField(
-                      controller: emailCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email),
-                      ),
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextFormField(
-                      controller: passwordCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: Icon(Icons.lock),
-                      ),
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          signUp(
-                            context,
-                            emailCtrl.text,
-                            usernameCtrl.text,
-                            passwordCtrl.text,
-                          );
-                        },
-                        child: const Text('Register'),
-                      ),
-                    ),
-                    const Text('Or login with existing account:'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Column(
+              children: [
+                const Text(
+                  'Welcome to LoopyBot!',
+                  style: TextStyle(
+                    color: AppColors.primaryColor,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Create Your Account',
+                  style: TextStyle(
+                    color: AppColors.secondaryColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 80),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushReplacementNamed(AppRoutes.loginGmail);
-                            },
-                            icon: Image.asset(
-                              'assets/icon/google_icon.png',
-                              height: 24.0,
-                              width: 24.0,
-                            ),
-                            label: const Text('Google'),
-                          ),
+                        CustomTextField(
+                          controller: usernameCtrl,
+                          hintText: 'Username',
+                          prefixIcon: Icons.person,
+                          focusNode: usernameFocusNode,
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushReplacementNamed(AppRoutes.homeChat);
-                            },
-                            label: const Text('Jarvis'),
-                          ),
+                        const SizedBox(height: 12),
+                        CustomTextField(
+                          controller: emailCtrl,
+                          hintText: 'Email',
+                          prefixIcon: Icons.email,
+                          focusNode: emailFocusNode,
+                          errorText: emailError,
+                        ),
+                        const SizedBox(height: 12),
+                        CustomTextField(
+                          controller: passwordCtrl,
+                          hintText: 'Password',
+                          prefixIcon: Icons.lock,
+                          obscureText: true,
+                          focusNode: passwordFocusNode,
+                          errorText: passwordError,
+                        ),
+                        const SizedBox(height: 48),
+                        MaterialButtonCustomWidget(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          onPressed: isLoading
+                              ? () {}
+                              : () async {
+                                  _validateUserInfo();
+
+                                  if (emailError == null &&
+                                      passwordError == null) {
+                                    signUp(
+                                      context: context,
+                                      username: usernameCtrl.text.trim(),
+                                      email: emailCtrl.text.trim(),
+                                      password: passwordCtrl.text.trim(),
+                                    );
+                                  }
+                                },
+                          content: isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                      color: AppColors.inverseTextColor),
+                                )
+                              : const Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.inverseTextColor,
+                                  ),
+                                ),
+                        ),
+                        const SizedBox(height: 48),
+                        const Text('Or login with existing account:'),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: MaterialButtonCustomWidget(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                onPressed: () => Navigator.of(context)
+                                    .pushNamed(AppRoutes.loginGmail),
+                                content: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'assets/icon/google_icon.png',
+                                      height: 24.0,
+                                      width: 24.0,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    const Text(
+                                      'Google',
+                                      style: TextStyle(
+                                        color: AppColors.inverseTextColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: MaterialButtonCustomWidget(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12.0),
+                                onPressed: () => Navigator.of(context)
+                                    .pushReplacementNamed(AppRoutes.loginPage),
+                                content: const Text(
+                                  'Loopy Bot',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.inverseTextColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                const Center(
+                  child: Text('By continuing, you agree to our Privacy Policy'),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            const Center(
-              child: Text('By continuing, you agree to our Privacy Policy'),
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  bool isValidEmail(String email) {
+    return email.contains('@');
+  }
+
+  bool isValidPassword(String password) {
+    if (password.length < 8) return false;
+    if (!password.contains(RegExp(r'[A-Z]'))) return false;
+    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return false;
+
+    return true;
+  }
+
+  void _validateUserInfo() {
+    usernameFocusNode.unfocus();
+    emailFocusNode.unfocus();
+    passwordFocusNode.unfocus();
+
+    setState(() {
+      emailError =
+          !isValidEmail(emailCtrl.text) ? 'Email phải chứa ký tự @' : null;
+
+      passwordError = !isValidPassword(passwordCtrl.text)
+          ? 'Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa và ký tự đặc biệt'
+          : null;
+    });
+  }
+
+  Future<void> signUp({
+    required BuildContext context,
+    required String email,
+    required String username,
+    required String password,
+  }) async {
+    setState(() => isLoading = true);
+
+    final result = await AuthenticationService.signUp(
+      context: context,
+      username: username,
+      email: email,
+      password: password,
+    );
+
+    if (result != null) {
+      if (context.mounted) {
+        setState(() => isLoading = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result ? 'Create LoopyBot Account successfully!' : 'Create LoopyBot Account failed',
+            ),
+            backgroundColor: result ? Colors.green : Colors.red,
+          ),
+        );
+
+        Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
+      }
+    }
   }
 }
